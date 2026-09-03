@@ -29,10 +29,10 @@ window.QUESTION_SCREEN_SESSION = {
         {
           id: "m1-reflexao",
           type: "content",
-          kicker: "Reflexão",
+          kicker: "💭 Reflexão",
           title: "Antes de começar",
-          body: "Você já pensou na sua postura hoje? O segredo está na postura correta. Ao longo deste módulo você vai entender como aplicá-la em cada função do chão de loja.",
-          image: "assets/fotos/question-screen/postura.png",
+          body: "Você já pensou na sua postura hoje?",
+          quote: "O segredo está na postura correta. Ao longo deste módulo você vai entender como aplicá-la em cada função do chão de loja.",
           transcript: "Antes de começar: pense na sua postura de hoje."
         },
         {
@@ -75,15 +75,14 @@ window.QUESTION_SCREEN_SESSION = {
         {
           id: "m1-areas",
           type: "content",
-          kicker: "Três áreas",
+          kicker: "📄 Texto",
           title: "As 3 áreas da Ergonomia",
-          body: "O corpo tem boa precisão motora, mas baixa resistência a grandes cargas. Pesos altos devem ir para máquinas e carrinhos.",
-          bullets: [
-            "Física — postura, anatomia, repetição, LER/DORT",
-            "Organizacional — tempo, equipes, comunicação, qualidade",
-            "Cognitiva — decisões, estresse, carga mental"
+          cards: [
+            { icon: "💪", title: "Física", body: "Anatomia, fisiologia, biomecânica e antropometria. Envolve postura, movimentos repetitivos, manuseio de materiais e LER/DORT." },
+            { icon: "🧩", title: "Organizacional", body: "Trabalho em grupo, tempo de trabalho, processos comunicativos, projetos participativos, gestão de qualidade." },
+            { icon: "🧠", title: "Cognitiva", body: "Tomada de decisões, confiabilidade humana, estresse, carga mental, interação com a máquina." }
           ],
-          image: "assets/fotos/question-screen/cover.png",
+          quote: "O sistema de ossos, tendões, músculos e ligamentos permite movimentos amplos e coordenação motora fina, mas com resistência pequena — por isso grandes resistências (carga e peso) devem ser feitas por máquinas e carrinhos, não pelo corpo.",
           transcript: "Três áreas: física, organizacional e cognitiva."
         },
         {
@@ -333,25 +332,29 @@ window.QUESTION_SCREEN_SESSION = {
         {
           id: "m3-iso",
           type: "content",
-          kicker: "📄 ISO 11226",
+          kicker: "📄 Texto normativo",
           title: "O que diz a ISO 11226",
-          body: "Uma postura mantida por mais de 4 segundos já é considerada estática. Varie a postura antes de completar 2 horas.",
-          bullets: [
-            "Mais de 4 s = postura estática",
-            "Variar antes de 2 h na mesma postura",
-            "Evitar ajoelhar/agachar prolongado — use assento",
-            "Baixa estatura: pés apoiados, sem compressão do mobiliário"
+          body: "Memorize estes 2 limites da ISO 11226.",
+          stats: [
+            { icon: "⏱️", num: "4 s", label: "já é postura estática de trabalho" },
+            { icon: "🔄", num: "2 h", label: "limite antes de variar a postura" }
           ],
-          image: "assets/fotos/question-screen/postura.png",
+          rules: [
+            { id: "🚫", text: "Posturas ajoelhada e agachada devem ser evitadas no abastecimento — usar sempre um suporte para sentar." },
+            { id: "🧍", text: "Em pé: tronco sem flexão rotineira; itens frequentes no alcance normal, ocasionais no alcance máximo." },
+            { id: "📏", text: "Baixa estatura: pés apoiados, tronco próximo ao mobiliário, sem compressão do corpo." }
+          ],
           transcript: "ISO 11226: 4 segundos e variação antes de 2 horas."
         },
         {
           id: "m3-reposicao",
           type: "content",
-          kicker: "Compare",
+          kicker: "👆 Compare",
           title: "Reposição baixa: certo × errado",
-          body: "Certo: sentar no suporte. Errado: agachar por tempo prolongado — sobrecarrega joelhos e coluna.",
-          image: "assets/fotos/question-screen/postura.png",
+          compare: [
+            { ok: true, label: "✓ Correto", text: "Use o suporte para sentar — joelhos e coluna agradecem." },
+            { ok: false, label: "✕ Evitar", text: "Agachar por tempo prolongado sobrecarrega joelhos e coluna." }
+          ],
           transcript: "Na prateleira baixa, use o suporte para sentar."
         },
         {
@@ -489,15 +492,15 @@ window.QUESTION_SCREEN_SESSION = {
         {
           id: "m4-dicas",
           type: "content",
-          kicker: "Resumo",
+          kicker: "📄 Texto",
           title: "Dicas rápidas do posto administrativo",
-          bullets: [
-            "Monitor paralelo à janela lateral",
-            "Piscar e olhar para o horizonte (> 6 m)",
-            "Temperatura 18–25 °C",
-            "Área sem vento direto do ar-condicionado"
+          items: [
+            { icon: "🪟", text: "Elimine reflexos: janelas paralelas ao monitor, nunca à frente ou atrás." },
+            { icon: "👁️", text: "Olhar muito tempo para a tela reduz o piscar e causa olhos secos — pisque com frequência." },
+            { icon: "🌅", text: "Na pausa, evite o computador e olhe para o horizonte, a mais de 6 metros de distância." },
+            { icon: "🌡️", text: "Temperatura de conforto: 18 a 25 °C — a saída do ar-condicionado não deve incidir direto sobre o colaborador." },
+            { icon: "🔀", text: "Se não for possível redirecionar o ar, reposicione o posto de trabalho." }
           ],
-          image: "assets/fotos/question-screen/cover.png",
           transcript: "Cinco dicas rápidas do posto administrativo."
         },
         {
@@ -605,19 +608,20 @@ window.QUESTION_SCREEN_SESSION = {
         {
           id: "m5-ficha",
           type: "content",
-          kicker: "📄 Ficha",
-          title: "Ficha de consulta — sequência",
-          bullets: [
-            "1 Mãos: fechar contra o pulso e abrir — 3×",
-            "2 Dedos: entrelaçar e ondular / polegares — 3×",
-            "3 Antebraço: puxar palma para fora — 20 s cada lado",
-            "4 Punhos: unir palmas e girar",
-            "5–7 Braços: cotovelo atrás da cabeça / atrás do corpo / acima",
-            "8 Pescoço: sim/não e inclinação lateral",
-            "9 Ombros: elevar e girar",
-            "10 Tronco: braço sobre a cabeça, inclinação lateral"
+          kicker: "📄 Texto",
+          title: "Ficha de consulta — sequência de alongamento",
+          items: [
+            { n: 1, title: "Mãos:", text: "fechar contra o pulso e abrir — 3×" },
+            { n: 2, title: "Dedos:", text: "entrelaçar e ondular / girar polegares / estender alternado — 3× cada" },
+            { n: 3, title: "Antebraço:", text: "puxar palma para fora — 20 s cada lado, 3×" },
+            { n: 4, title: "Punhos:", text: "unir palmas no peito e afastar / girar nos dois sentidos" },
+            { n: 5, title: "Braços:", text: "cotovelo atrás da cabeça — 20 s cada lado, 3×" },
+            { n: 6, title: "Braços (atrás do corpo):", text: "dedos entrelaçados, afastar do corpo — 20 s, 3×" },
+            { n: 7, title: "Braços (acima da cabeça):", text: "dedos entrelaçados, palmas para cima — 20 s" },
+            { n: 8, title: "Cabeça/pescoço:", text: "sim/não e inclinação lateral — 20 s cada lado, 3× (evitar levar a cabeça para trás)" },
+            { n: 9, title: "Ombros:", text: "elevar ao inspirar / girar frente-trás — 3× cada sentido" },
+            { n: 10, title: "Tronco:", text: "braço sobre a cabeça, inclinação lateral — 20 s cada lado, 3×" }
           ],
-          image: "assets/fotos/question-screen/postura.png",
           transcript: "Ficha de consulta dos alongamentos."
         },
         {
@@ -698,11 +702,28 @@ window.QUESTION_SCREEN_SESSION = {
           transcript: "Pergunta 4 do módulo 5."
         },
         {
+          id: "m5-reflexao",
+          type: "content",
+          kicker: "💭 Reflexão",
+          title: "Antes de encerrar",
+          body: "Quando você vai praticar esses alongamentos?",
+          items: [
+            { icon: "🌅", text: "No início do turno" },
+            { icon: "☕", text: "Na pausa" },
+            { icon: "🏠", text: "Antes de ir para casa" }
+          ],
+          quote: "Não se esqueça de pensar neste assunto todos os dias. Cuidar da sua postura hoje é evitar dores e afastamentos amanhã — pequenos ajustes, repetidos todos os dias, fazem toda a diferença.",
+          transcript: "Antes de encerrar: escolha quando praticar os alongamentos."
+        },
+        {
           id: "m5-done",
-          type: "cover",
-          title: "Treinamento concluído",
-          subtitle: "Parabéns! Você concluiu a NR 17 — Ergonomia no Comércio e na Logística.",
-          image: "assets/fotos/final.png",
+          type: "finale",
+          kicker: "🏆 Conclusão",
+          eyebrow: "Certificado de conclusão",
+          title: "Parabéns",
+          body: "Você concluiu o treinamento NR 17 — Ergonomia no Comércio e na Logística. Por mérito, dedicação e compromisso com a ergonomia, você percorreu os módulos disponíveis.",
+          chips: ["NR 17", "Ergonomia", "Comércio e Logística"],
+          image: "assets/fotos/capa.png",
           transcript: "Parabéns pela conclusão do treinamento."
         }
       ]

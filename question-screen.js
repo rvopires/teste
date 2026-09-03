@@ -3,11 +3,12 @@
  *
  * Tipos (JSON) — tudo DENTRO do cartão:
  *  - cover:    { type, title, subtitle?, image? }
- *  - content:  { type, kicker?, title, body?, bullets?, image? }
+ *  - content:  { type, kicker?, title, body?, bullets?, image?, cards?, stats?, items?, rules?, quote?, note?, compare? }
  *  - video:    { type, title, kicker?, duration?, scene?, brief?, video?, youtube?, image?/poster? }
  *  - image:    { type, title, kicker?, body?, bullets?, image, imageFit? }
  *  - quiz-intro: { type, title, body?, count?, minCorrect?, image? }
  *  - quiz-result: { type, passed, score, total, minCorrect, title? }
+ *  - finale:   { type, title?, body?, eyebrow?, chips?, image?, kicker? }
  *  - question: { type, question, alternatives[2..4], explanation?, image?, opinion? }
  *
  * video: se tiver `video` (mp4) ou `youtube` (id/url), toca o player;
@@ -120,24 +121,113 @@
       </article>`;
   }
 
-  function contentHTML(data) {
-    var bullets = Array.isArray(data.bullets) && data.bullets.length
-      ? `<ul class="qs-bullets">${data.bullets.map(function (b) {
-          return `<li>${esc(b)}</li>`;
-        }).join('')}</ul>`
+  function finaleHTML(data) {
+    var chips = Array.isArray(data.chips) ? data.chips : [];
+    var photo = data.image
+      ? `<img class="qs-finale-photo" src="${esc(data.image)}" alt="" aria-hidden="true">`
       : '';
-    var body = data.body ? `<p class="qs-body">${esc(data.body)}</p>` : '';
-    var hasImg = !!data.image;
+    var chipHtml = chips.map(function (c) {
+      return `<span class="qs-finale-chip">${esc(c)}</span>`;
+    }).join('');
     return `
-      <article class="qs-screen is-content${hasImg ? ' has-split' : ''}" data-qs-root data-type="content">
-        <div class="qs-media ${hasImg ? 'qs-media-split' : 'qs-media-sm'}">
+      <article class="qs-screen is-finale" data-qs-root data-type="finale">
+        ${photo}
+        <div class="qs-finale-veil" aria-hidden="true"></div>
+        <div class="qs-finale-inner">
+          ${data.kicker ? `<div class="qs-finale-kicker">${esc(data.kicker)}</div>` : ''}
+          <div class="qs-finale-card medal-${esc(data.medalRank || 'none')}">
+            <div class="qs-finale-eyebrow">${esc(data.eyebrow || 'Certificado de conclusão')}</div>
+            <div class="qs-finale-trophy" aria-hidden="true">${esc(data.medal || '🏆')}</div>
+            ${data.medalName ? `<div class="qs-finale-medal-name">${esc(data.medalName)}</div>` : ''}
+            <h2 class="qs-finale-title">${esc(data.title || 'Parabéns')}<span>!</span></h2>
+            <div class="qs-finale-line" aria-hidden="true"></div>
+            ${data.points != null ? `<div class="qs-finale-score">${esc(data.points)}<small> / ${esc(data.maxPoints != null ? data.maxPoints : '')} pts</small></div>` : ''}
+            ${data.hits != null ? `<p class="qs-finale-hits">${esc(data.hits)} acertos em ${esc(data.questions != null ? data.questions : '')} questões</p>` : ''}
+            <p class="qs-finale-body">${esc(data.body || data.subtitle || '')}</p>
+            ${chipHtml ? `<div class="qs-finale-chips">${chipHtml}</div>` : ''}
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function contentBlocks(data) {
+    var html = '';
+    if (data.body) html += `<p class="qs-body">${esc(data.body)}</p>`;
+    if (Array.isArray(data.stats) && data.stats.length) {
+      html += `<div class="qs-stats">${data.stats.map(function (s) {
+        return `<div class="qs-stat">
+          ${s.icon ? `<span class="qs-stat-ico" aria-hidden="true">${esc(s.icon)}</span>` : ''}
+          <div class="qs-stat-num">${esc(s.num || '')}</div>
+          <div class="qs-stat-lbl">${esc(s.label || '')}</div>
+        </div>`;
+      }).join('')}</div>`;
+    }
+    if (Array.isArray(data.cards) && data.cards.length) {
+      html += `<div class="qs-cards count-${data.cards.length}">${data.cards.map(function (c) {
+        return `<article class="qs-card">
+          ${c.icon ? `<div class="qs-card-ico" aria-hidden="true">${esc(c.icon)}</div>` : ''}
+          ${c.title ? `<h3>${esc(c.title)}</h3>` : ''}
+          ${c.body ? `<p>${esc(c.body)}</p>` : ''}
+        </article>`;
+      }).join('')}</div>`;
+    }
+    if (Array.isArray(data.items) && data.items.length) {
+      html += `<div class="qs-items">${data.items.map(function (it) {
+        var mark = it.n != null
+          ? `<span class="qs-item-num">${esc(it.n)}</span>`
+          : (it.icon ? `<span class="qs-item-ico" aria-hidden="true">${esc(it.icon)}</span>` : '');
+        var title = it.title ? `<b>${esc(it.title)}</b> ` : '';
+        return `<div class="qs-item">${mark}<p>${title}${esc(it.text || it.body || '')}</p></div>`;
+      }).join('')}</div>`;
+    }
+    if (Array.isArray(data.compare) && data.compare.length) {
+      html += `<div class="qs-compare">${data.compare.map(function (c) {
+        var ok = !!c.ok;
+        return `<article class="qs-compare-col ${ok ? 'is-ok' : 'is-bad'}">
+          <div class="qs-compare-lbl">${esc(c.label || (ok ? '✓ Correto' : '✕ Evitar'))}</div>
+          <p>${esc(c.text || c.body || '')}</p>
+        </article>`;
+      }).join('')}</div>`;
+    }
+    if (Array.isArray(data.bullets) && data.bullets.length) {
+      html += `<ul class="qs-bullets">${data.bullets.map(function (b) {
+        return `<li>${esc(b)}</li>`;
+      }).join('')}</ul>`;
+    }
+    if (Array.isArray(data.rules) && data.rules.length) {
+      html += `<div class="qs-rules">${data.rules.map(function (r) {
+        return `<article class="qs-rule">
+          ${r.id ? `<span class="qs-rule-id">${esc(r.id)}</span>` : ''}
+          <p>${esc(r.text || r.body || '')}</p>
+        </article>`;
+      }).join('')}</div>`;
+    }
+    if (data.quote) html += `<blockquote class="qs-quote">${esc(data.quote)}</blockquote>`;
+    if (data.note) html += `<p class="qs-note">${esc(data.note)}</p>`;
+    return html;
+  }
+
+  function contentHTML(data) {
+    var hasImg = !!data.image;
+    var head = `${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
+          <h2 class="qs-title">${esc(data.title || '')}</h2>
+          ${contentBlocks(data)}`;
+    if (hasImg) {
+      return `
+      <article class="qs-screen is-content has-split" data-qs-root data-type="content">
+        <div class="qs-media qs-media-split">
           ${mediaHTML(data)}
         </div>
-        <div class="qs-panel${hasImg ? ' qs-panel-split' : ''}">
-          ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
-          <h2 class="qs-title">${esc(data.title || '')}</h2>
-          ${body}
-          ${bullets}
+        <div class="qs-panel qs-panel-split">
+          ${head}
+        </div>
+      </article>`;
+    }
+    var dense = (data.items && data.items.length > 6) || (data.cards && data.cards.length > 3);
+    return `
+      <article class="qs-screen is-content is-text${dense ? ' is-dense' : ''}" data-qs-root data-type="content">
+        <div class="qs-panel qs-panel-text">
+          ${head}
         </div>
       </article>`;
   }
@@ -149,7 +239,7 @@
     if (!desc && count) {
       desc = 'Responda <strong>' + count + '</strong> perguntas de múltipla escolha.';
       if (min) desc += ' Você precisa acertar no mínimo <strong>' + min + '</strong> para avançar.';
-      desc += ' Quanto mais rápido acertar, mais pontos.';
+      desc += ' Cada acerto vale até <strong>50 pontos</strong> — quanto mais rápido, mais pontos.';
     }
     return `
       <article class="qs-screen is-quiz-intro" data-qs-root data-type="quiz-intro">
@@ -255,6 +345,7 @@
     var type = this.data.type || 'question';
     var html = questionHTML(this.data);
     if (type === 'cover') html = coverHTML(this.data);
+    else if (type === 'finale') html = finaleHTML(this.data);
     else if (type === 'content') html = contentHTML(this.data);
     else if (type === 'video') html = videoHTML(this.data);
     else if (type === 'image') html = imageHTML(this.data);
@@ -314,7 +405,8 @@
   QuestionScreen.prototype._quizPoints = function (correct) {
     if (!correct) return 0;
     var ratio = this._tTot ? Math.max(0, Math.min(1, this._tLeft / this._tTot)) : 1;
-    return Math.round(400 + (1000 - 400) * ratio);
+    var max = this.options.maxPoints != null ? Number(this.options.maxPoints) : 50;
+    return Math.max(5, Math.min(max, Math.round(max * ratio)));
   };
 
   QuestionScreen.prototype._setVideoPlaying = function (on) {

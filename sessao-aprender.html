@@ -66,9 +66,11 @@
       <div class="qs-progress" id="progress" aria-label="Progresso"></div>
       <div class="qs-pts" id="ptsChip" hidden>0 pts</div>
       <div class="qs-tools">
+        <span class="qs-page-chip" id="pageChip" hidden>0/0</span>
         <button type="button" id="btnMode" class="qs-sim-btn" title="Modo simulação" hidden aria-pressed="false">
           <span class="qs-label" id="simLabel">Simulação: OFF</span>
         </button>
+        <button type="button" id="btnJump" class="qs-sim-btn" title="Mapa de páginas" hidden>Mapa</button>
         <button type="button" id="btnMusic" title="Música" aria-pressed="false">🔇</button>
         <button type="button" id="btnTranscript" title="Transcrição">Aa</button>
         <button type="button" id="btnHome" title="Voltar à capa">⌂</button>
@@ -120,6 +122,24 @@
 
     <div class="qs-toast" id="simToast" hidden role="status"></div>
 
+    <button type="button" class="qs-jump-fab" id="simFab" hidden>Sim · mapa</button>
+    <aside class="qs-jump" id="simJump" hidden>
+      <header>
+        <div>
+          <strong>Mapa da simulação</strong>
+          <span id="simJumpPos">—</span>
+        </div>
+        <button type="button" id="btnJumpClose" aria-label="Fechar mapa">×</button>
+      </header>
+      <form id="simJumpForm" class="qs-jump-form">
+        <input id="simJumpInput" type="number" min="1" inputmode="numeric" placeholder="Nº da página" aria-label="Número da página">
+        <button type="submit">Ir</button>
+      </form>
+      <p class="qs-jump-hint">Clique na tela ou digite <kbd>go12</kbd> + Enter</p>
+      <div class="qs-jump-list" id="simJumpList"></div>
+      <button type="button" class="qs-jump-off" id="btnJumpOff">Desligar simulação</button>
+    </aside>
+
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
   <script src="question-screen-data.js"></script>
@@ -133,6 +153,30 @@
   }
 
   var modules = session.modules;
+  var catalog = [];
+  modules.forEach(function (m, mi) {
+    (m.screens || []).forEach(function (s, si) {
+      catalog.push({
+        n: catalog.length + 1,
+        mi: mi,
+        si: si,
+        mod: m.id,
+        type: s.type || '',
+        title: s.title || s.question || s.kicker || s.type || 'Tela',
+        kind: (
+          s.type === 'cover' ? 'Capa' :
+          s.type === 'video' ? 'Vídeo' :
+          s.type === 'image' ? 'Foto' :
+          s.type === 'content' ? 'Texto' :
+          s.type === 'quiz-intro' ? 'Desafio' :
+          s.type === 'question' ? 'Pergunta' :
+          s.type === 'finale' ? 'Conclusão' :
+          s.type
+        )
+      });
+    });
+  });
+  var jumpOpen = false;
   var modIndex = -1;
   var slideIndex = 0;
   var answered = {};
@@ -152,6 +196,34 @@
     streak: 0,
     bestStreak: 0
   };
+  var sessionAnswers = {};
+  var PTS_MAX = 50;
+  var questionCount = catalog.filter(function (item) { return item.type === 'question'; }).length;
+
+  function sessionTotals() {
+    var pts = 0;
+    var hits = 0;
+    Object.keys(sessionAnswers).forEach(function (id) {
+      var a = sessionAnswers[id] || {};
+      pts += a.pts || 0;
+      if (a.correct) hits += 1;
+    });
+    return {
+      points: pts,
+      hits: hits,
+      answered: Object.keys(sessionAnswers).length,
+      questions: questionCount,
+      max: questionCount * PTS_MAX
+    };
+  }
+
+  function sessionMedal(tot) {
+    var max = tot.max || 1;
+    var pct = tot.points / max;
+    if (pct >= 0.8) return { emoji: '🥇', name: 'Medalha de ouro', rank: 'gold' };
+    if (pct >= 0.6) return { emoji: '🥈', name: 'Medalha de prata', rank: 'silver' };
+    return { emoji: '🥉', name: 'Medalha de bronze', rank: 'bronze' };
+  }
 
   function quizMedal(passed, correct, total) {
     var pct = total ? correct / total : 0;
@@ -164,9 +236,10 @@
   function updatePtsChip() {
     var chip = document.getElementById('ptsChip');
     if (!chip) return;
-    var on = mode === 'play' && (quizState.active || showingResult);
+    var tot = sessionTotals();
+    var on = mode === 'play' && (quizState.active || showingResult || tot.answered > 0);
     chip.hidden = !on;
-    chip.textContent = (quizState.points || 0) + ' pts';
+    chip.textContent = tot.points + ' pts';
   }
 
   function clearAutoAdvance() {
@@ -216,6 +289,7 @@
     for (var i = quizState.introIndex + 1; i < list.length; i++) {
       if (list[i].type !== 'question') break;
       delete answered[list[i].id];
+      delete sessionAnswers[list[i].id];
     }
   }
 
@@ -314,11 +388,22 @@
     setChrome(false);
     transcript.classList.remove('open');
     renderProgress();
+    syncJumpUI();
   }
 
   function currentMod() { return modules[modIndex]; }
   function screens() { return currentMod() ? currentMod().screens : []; }
   function current() { return screens()[slideIndex]; }
+
+  function isFinale() {
+    var s = current();
+    return !!(s && s.type === 'finale');
+  }
+
+  function exitPlay() {
+    if (isFinale()) showHome();
+    else showMenu();
+  }
 
   function renderProgress() {
     if (mode !== 'play') {
@@ -333,7 +418,8 @@
   }
 
   function canForward() {
-    if (demoMode) return true;
+    if (demoMode) return !isFinale();
+    if (isFinale()) return false;
     if (showingResult) return !!quizState.passed;
     var s = current();
     if (!s) return false;
@@ -427,6 +513,7 @@
     }
     slideIndex = next;
     mountSlide();
+    if (isFinale()) completeCurrentModule();
   }
 
   function handleContinue(info) {
@@ -455,6 +542,10 @@
     }
     if (slideIndex >= screens().length - 1) {
       completeCurrentModule();
+      if (isFinale()) {
+        updateNav();
+        return;
+      }
       showMenu();
       return;
     }
@@ -506,6 +597,7 @@
     renderProgress();
     updateNav();
     showTranscript();
+    syncJumpUI();
   }
 
   function openModule(i) {
@@ -521,12 +613,163 @@
     mountSlide();
   }
 
+  function currentGlobalPage() {
+    if (mode !== 'play' || modIndex < 0) return 0;
+    for (var i = 0; i < catalog.length; i++) {
+      if (catalog[i].mi === modIndex && catalog[i].si === slideIndex) return catalog[i].n;
+    }
+    return 0;
+  }
+
+  function typeLabel(type) {
+    return (
+      type === 'cover' ? 'Capa' :
+      type === 'video' ? 'Vídeo' :
+      type === 'image' ? 'Foto' :
+      type === 'content' ? 'Texto' :
+      type === 'quiz-intro' ? 'Desafio' :
+      type === 'question' ? 'Pergunta' :
+      type === 'finale' ? 'Conclusão' :
+      type || 'Tela'
+    );
+  }
+
+  function prepareQuizForJump(targetSi) {
+    var list = screens();
+    var intro = -1;
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (list[i].type === 'quiz-intro') intro = i;
+    }
+    if (intro < 0) return;
+    var total = 0;
+    var min = 0;
+    for (i = intro + 1; i < list.length; i++) {
+      if (list[i].type === 'question') total++;
+    }
+    min = list[intro].minCorrect != null ? Number(list[intro].minCorrect) : Math.ceil(total * 0.75);
+    quizState = {
+      active: true,
+      correct: total,
+      answered: total,
+      minCorrect: min,
+      total: total,
+      introIndex: intro,
+      passed: true,
+      points: 0,
+      streak: 0,
+      bestStreak: 0
+    };
+    for (i = intro + 1; i < list.length; i++) {
+      if (list[i].type === 'question' && list[i].id) answered[list[i].id] = true;
+    }
+    if (targetSi > intro) showingResult = false;
+  }
+
+  function jumpToPage(n) {
+    var item = catalog[n - 1];
+    if (!item) return false;
+    jumpToScreen(item.mi, item.si);
+    return true;
+  }
+
+  function jumpToScreen(mi, si) {
+    if (!modules[mi] || !modules[mi].screens[si]) return;
+    clearAutoAdvance();
+    resetQuizState();
+    answered = {};
+    setChrome(true);
+    modIndex = mi;
+    slideIndex = si;
+    mode = 'play';
+    brandTxt.textContent = 'Módulo ' + currentMod().id;
+    var s = current();
+    if (s && (s.type === 'question' || s.type === 'quiz-intro' || s.type === 'finale')) {
+      prepareQuizForJump(si);
+    }
+    mountSlide();
+    syncJumpUI();
+    var listEl = document.getElementById('simJumpList');
+    var cur = listEl && listEl.querySelector('.qs-jump-item.is-cur');
+    if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest' });
+  }
+
+  function renderJumpList() {
+    var box = document.getElementById('simJumpList');
+    if (!box) return;
+    var html = '';
+    var lastMod = null;
+    var curN = currentGlobalPage();
+    catalog.forEach(function (item) {
+      if (item.mod !== lastMod) {
+        lastMod = item.mod;
+        html += '<div class="qs-jump-mod">Módulo ' + item.mod + '</div>';
+      }
+      html += '<button type="button" class="qs-jump-item' + (item.n === curN ? ' is-cur' : '') + '" data-jump="' + item.n + '">' +
+        '<span class="qs-jump-n">' + item.n + '</span>' +
+        '<span><small>' + typeLabel(item.type) + '</small><b>' + item.title + '</b></span>' +
+      '</button>';
+    });
+    box.innerHTML = html;
+    box.querySelectorAll('[data-jump]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        jumpToPage(+btn.getAttribute('data-jump'));
+      });
+    });
+  }
+
+  function setJumpOpen(on) {
+    jumpOpen = !!on && !!demoMode;
+    var panel = document.getElementById('simJump');
+    if (panel) panel.hidden = !jumpOpen;
+    if (jumpOpen) {
+      renderJumpList();
+      var input = document.getElementById('simJumpInput');
+      if (input) {
+        input.max = String(catalog.length);
+        input.value = currentGlobalPage() || '';
+      }
+    }
+  }
+
+  function syncJumpUI() {
+    var total = catalog.length;
+    var n = currentGlobalPage();
+    var pos = (mode === 'play' && n) ? (n + ' / ' + total) : ('— / ' + total);
+    var chip = document.getElementById('pageChip');
+    if (chip) {
+      chip.hidden = !demoMode;
+      chip.textContent = pos;
+    }
+    var posEl = document.getElementById('simJumpPos');
+    if (posEl) posEl.textContent = pos;
+    var fab = document.getElementById('simFab');
+    var btnJump = document.getElementById('btnJump');
+    if (fab) fab.hidden = !demoMode;
+    if (btnJump) btnJump.hidden = !demoMode || !demoBtnVisible;
+    if (jumpOpen && demoMode) renderJumpList();
+    else if (!demoMode) setJumpOpen(false);
+  }
+
   function mountSlide() {
     var s = current();
     if (!s) return;
     clearAutoAdvance();
     showingResult = false;
     var payload = Object.assign({}, s);
+
+    if (s.type === 'finale') {
+      var tot = sessionTotals();
+      var medal = sessionMedal(tot);
+      payload.points = tot.points;
+      payload.maxPoints = tot.max;
+      payload.hits = tot.hits;
+      payload.questions = tot.questions;
+      payload.medal = medal.emoji;
+      payload.medalName = medal.name;
+      payload.medalRank = medal.rank;
+      payload.body = 'Treinamento concluído. Até ' + PTS_MAX + ' pts por questão, conforme a rapidez.';
+    }
 
     if (s.type === 'quiz-intro') {
       var total = s.count != null ? Number(s.count) : countQuizQuestionsFrom(slideIndex);
@@ -547,16 +790,19 @@
     if (qs) qs.destroy();
     qs = QuestionScreen.mount(shell, payload, {
       quizScoring: quizState.active && s.type === 'question' && !s.opinion,
+      maxPoints: PTS_MAX,
       time: s.time || 12,
       onSelect: function (result) {
         answered[s.id] = true;
         if (quizState.active && s.type === 'question' && !s.opinion) {
+          var pts = (result && result.points) || 0;
+          sessionAnswers[s.id] = { pts: pts, correct: !!(result && result.correct) };
           quizState.answered += 1;
           if (result && result.correct) {
             quizState.correct += 1;
             quizState.streak += 1;
             quizState.bestStreak = Math.max(quizState.bestStreak, quizState.streak);
-            quizState.points += (result.points || 0);
+            quizState.points += pts;
           } else {
             quizState.streak = 0;
           }
@@ -573,10 +819,12 @@
     });
 
     if (s.type !== 'question') answered[s.id] = true;
+    if (s.type === 'finale') completeCurrentModule();
     renderProgress();
     updateNav();
     updatePtsChip();
     showTranscript();
+    syncJumpUI();
   }
 
   function go(delta) {
@@ -632,7 +880,7 @@
   btnBack.addEventListener('click', function () { go(-1); });
   btnFwd.addEventListener('click', function () { advance(); });
   document.getElementById('btnHome').addEventListener('click', function () {
-    if (mode === 'play') showMenu();
+    if (mode === 'play') exitPlay();
     else showHome();
   });
   document.getElementById('btnStartHome').addEventListener('click', showMenu);
@@ -666,6 +914,26 @@
   document.getElementById('btnMode').addEventListener('click', function () {
     toggleDemoMode();
   });
+  document.getElementById('btnJump').addEventListener('click', function () {
+    setJumpOpen(!jumpOpen);
+  });
+  document.getElementById('simFab').addEventListener('click', function () {
+    setJumpOpen(!jumpOpen);
+  });
+  document.getElementById('btnJumpClose').addEventListener('click', function () {
+    setJumpOpen(false);
+  });
+  document.getElementById('btnJumpOff').addEventListener('click', function () {
+    if (demoMode) toggleDemoMode();
+  });
+  document.getElementById('simJumpForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var n = parseInt(document.getElementById('simJumpInput').value, 10);
+    if (n) jumpToPage(n);
+  });
+  document.getElementById('pageChip').addEventListener('click', function () {
+    setJumpOpen(true);
+  });
 
   function applyDemoUI() {
     var btn = document.getElementById('btnMode');
@@ -676,6 +944,7 @@
       btn.setAttribute('aria-pressed', demoMode ? 'true' : 'false');
     }
     if (label) label.textContent = demoMode ? 'Simulação: ON' : 'Simulação: OFF';
+    syncJumpUI();
     updateNav();
   }
 
@@ -701,18 +970,45 @@
     } catch (err) {}
     applyDemoUI();
     showSimToast(demoMode);
+    setJumpOpen(demoMode);
     if (mode === 'menu') showMenu();
   }
 
   (function initDemoShortcut() {
     var seq = '';
     var target = 'qa1010';
+    var goBuf = '';
+    var goTimer = null;
     window.addEventListener('keydown', function (e) {
       if (e.ctrlKey || e.altKey || e.metaKey) return;
       var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
       if (tag === 'input' || tag === 'textarea' || (e.target && e.target.isContentEditable)) return;
-      if (!e.key || e.key.length !== 1) return;
-      seq = (seq + e.key.toLowerCase()).slice(-target.length);
+      if (e.key === 'Enter' && demoMode && /^go\d{1,2}$/.test(goBuf)) {
+        e.preventDefault();
+        jumpToPage(parseInt(goBuf.slice(2), 10));
+        goBuf = '';
+        return;
+      }
+      if (!e.key || e.key.length !== 1) {
+        if (e.key === 'Escape') goBuf = '';
+        return;
+      }
+      var ch = e.key.toLowerCase();
+      if (demoMode) {
+        if (ch === 'g') { goBuf = 'g'; return; }
+        if (goBuf === 'g' && ch === 'o') { goBuf = 'go'; return; }
+        if (goBuf.indexOf('go') === 0 && /^\d$/.test(ch) && goBuf.length < 4) {
+          goBuf += ch;
+          if (goTimer) clearTimeout(goTimer);
+          goTimer = setTimeout(function () {
+            if (/^go\d{1,2}$/.test(goBuf)) jumpToPage(parseInt(goBuf.slice(2), 10));
+            goBuf = '';
+          }, 700);
+          return;
+        }
+        goBuf = '';
+      }
+      seq = (seq + ch).slice(-target.length);
       if (seq !== target) return;
       seq = '';
       toggleDemoMode();
@@ -720,10 +1016,15 @@
   })();
 
   applyDemoUI();
+  if (demoMode) setJumpOpen(true);
 
   document.addEventListener('keydown', function (e) {
     if (!document.getElementById('tutorialModal').hidden && e.key === 'Escape') {
       closeTutorial();
+      return;
+    }
+    if (e.key === 'Escape' && jumpOpen) {
+      setJumpOpen(false);
       return;
     }
     if (mode === 'home') {
@@ -733,7 +1034,7 @@
     if (e.key === 'ArrowRight') advance();
     if (e.key === 'ArrowLeft') go(-1);
     if (e.key === 'Escape') {
-      if (mode === 'play') showMenu();
+      if (mode === 'play') exitPlay();
       else showHome();
     }
   });
