@@ -16,7 +16,7 @@ window.QUESTION_SCREEN_SESSION = {
     {
       id: 1,
       title: "Fundamentos da Ergonomia",
-      meta: "Vídeos + conteúdo · 4 perguntas no final",
+      meta: "Vídeos + reflexão · 4 perguntas no final",
       screens: [
         {
           id: "m1-cover",
@@ -28,11 +28,11 @@ window.QUESTION_SCREEN_SESSION = {
         },
         {
           id: "m1-reflexao",
-          type: "content",
+          type: "reflect",
           kicker: "💭 Reflexão",
           title: "Antes de começar",
-          body: "Você já pensou na sua postura hoje?",
-          quote: "O segredo está na postura correta. Ao longo deste módulo você vai entender como aplicá-la em cada função do chão de loja.",
+          prompt: "Você já pensou na sua postura hoje?",
+          answer: "O segredo está na postura correta. Ao longo deste módulo você vai entender como aplicá-la em cada função do chão de loja.",
           transcript: "Antes de começar: pense na sua postura de hoje."
         },
         {
@@ -348,9 +348,10 @@ window.QUESTION_SCREEN_SESSION = {
         },
         {
           id: "m3-reposicao",
-          type: "content",
+          type: "compare",
           kicker: "👆 Compare",
           title: "Reposição baixa: certo × errado",
+          body: "Toque nos dois cards para comparar",
           compare: [
             { ok: true, label: "✓ Correto", text: "Use o suporte para sentar — joelhos e coluna agradecem." },
             { ok: false, label: "✕ Evitar", text: "Agachar por tempo prolongado sobrecarrega joelhos e coluna." }
@@ -370,13 +371,23 @@ window.QUESTION_SCREEN_SESSION = {
           transcript: "Vídeo: riscos biomecânicos — repetição, vibração e postura forçada."
         },
         {
+          id: "m3-reflexao",
+          type: "reflect",
+          kicker: "💭 Reflexão",
+          title: "Uma pausa para pensar",
+          prompt: "E você, já reparou nisso na sua rotina?",
+          answer: "Movimento repetitivo, vibração e postura forçada acontecem em pequenos momentos do dia a dia — muitas vezes sem percebermos. Preste atenção na próxima tarefa que você fizer e veja se algum desses riscos aparece.",
+          transcript: "Reflexão: riscos na rotina."
+        },
+        {
           id: "m3-quiz-intro",
           type: "quiz-intro",
-          title: "Desafio NR 17 — Módulo 3",
+          title: "Modo Sprint — Módulo 3",
           count: 5,
           minCorrect: 4,
-          icon: "🎮",
-          transcript: "Desafio final do módulo 3: 5 perguntas."
+          icon: "🏃",
+          body: "Responda <strong>5</strong> afirmações de verdadeiro ou falso. Acerte no mínimo <strong>4</strong> para avançar. Cada acerto vale até <strong>50 pontos</strong>.",
+          transcript: "Desafio sprint do módulo 3: 5 verdadeiro ou falso."
         },
         {
           id: "m3-q1",
@@ -443,7 +454,7 @@ window.QUESTION_SCREEN_SESSION = {
     {
       id: 4,
       title: "Ergonomia em Áreas Administrativas",
-      meta: "Vídeos + conteúdo · 3 perguntas no final",
+      meta: "Vídeos + conteúdo · ordenar a rotina no final",
       screens: [
         {
           id: "m4-cover",
@@ -490,6 +501,20 @@ window.QUESTION_SCREEN_SESSION = {
           transcript: "Vídeo: temperatura do posto."
         },
         {
+          id: "m4-reflexao",
+          type: "reflect",
+          kicker: "💭 Reflexão",
+          title: "Uma pausa para pensar",
+          prompt: "Quando foi a última vez que você ajustou a posição do seu monitor?",
+          choices: [
+            { text: "Hoje" },
+            { text: "Essa semana" },
+            { text: "Nem lembro" }
+          ],
+          answer: "Um ajuste de poucos segundos evita horas de desconforto no fim do dia.",
+          transcript: "Reflexão: ajuste do monitor."
+        },
+        {
           id: "m4-dicas",
           type: "content",
           kicker: "📄 Texto",
@@ -506,60 +531,33 @@ window.QUESTION_SCREEN_SESSION = {
         {
           id: "m4-quiz-intro",
           type: "quiz-intro",
-          title: "Desafio NR 17 — Módulo 4",
-          count: 3,
-          minCorrect: 2,
-          icon: "🎮",
-          transcript: "Desafio final do módulo 4: 3 perguntas."
+          title: "Ordene a Rotina — Módulo 4",
+          count: 1,
+          minCorrect: 1,
+          icon: "🔢",
+          body: "Toque nos <strong>3 cuidados</strong> do posto administrativo na ordem que faz mais sentido seguir no seu turno. Você tem <strong>22 segundos</strong>. Até <strong>50 pontos</strong> se acertar rápido.",
+          transcript: "Desafio: ordenar a rotina do posto administrativo."
         },
         {
-          id: "m4-q1",
-          type: "question",
-          question: "Como o monitor deve ficar em relação à janela?",
-          image: "assets/fotos/question-screen/cover.png",
-          alternatives: [
-            { id: "a", text: "De frente para a janela", correct: false },
-            { id: "b", text: "De costas para a janela", correct: false },
-            { id: "c", text: "Paralelo à janela lateral", correct: true },
-            { id: "d", text: "Tanto faz", correct: false }
+          id: "m4-order",
+          type: "order",
+          kicker: "🔢 Atividade",
+          title: "Ordene a rotina",
+          body: "Toque nos cuidados na ordem que você seguiria.",
+          time: 22,
+          items: [
+            { key: "monitor", text: "Posicionar o monitor paralelo à janela", rank: 0 },
+            { key: "olhos", text: "Piscar os olhos e olhar um ponto distante nas pausas", rank: 1 },
+            { key: "temperatura", text: "Verificar se o ar-condicionado não bate direto em você", rank: 2 }
           ],
-          explanation: "Paralelo à janela lateral reduz reflexo e ofuscamento.",
-          transcript: "Pergunta 1 do módulo 4."
-        },
-        {
-          id: "m4-q2",
-          type: "question",
-          question: "Nas pausas visuais, para onde o colaborador deve olhar?",
-          image: "assets/fotos/question-screen/cover.png",
-          alternatives: [
-            { id: "a", text: "Para o celular", correct: false },
-            { id: "b", text: "Para um ponto a mais de 6 metros", correct: true },
-            { id: "c", text: "Para o teto", correct: false },
-            { id: "d", text: "Para a própria tela", correct: false }
-          ],
-          explanation: "Olhar para um ponto distante (mais de 6 m) descansa a visão.",
-          transcript: "Pergunta 2 do módulo 4."
-        },
-        {
-          id: "m4-q3",
-          type: "question",
-          question: "Qual é a faixa de temperatura de conforto recomendada?",
-          image: "assets/fotos/question-screen/cover.png",
-          alternatives: [
-            { id: "a", text: "10 °C a 15 °C", correct: false },
-            { id: "b", text: "18 °C a 25 °C", correct: true },
-            { id: "c", text: "26 °C a 30 °C", correct: false },
-            { id: "d", text: "Não há recomendação", correct: false }
-          ],
-          explanation: "A faixa de conforto é 18–25 °C.",
-          transcript: "Pergunta 3 — fim do módulo 4."
+          transcript: "Ordene os 3 cuidados do posto administrativo."
         }
       ]
     },
     {
       id: 5,
       title: "Ginástica Laboral e Encerramento",
-      meta: "Vídeos + conteúdo · 4 perguntas no final",
+      meta: "Vídeos + conteúdo · jogo de associação no final",
       screens: [
         {
           id: "m5-cover",
@@ -640,79 +638,41 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m5-quiz-intro",
           type: "quiz-intro",
           title: "Desafio NR 17 — Módulo 5",
-          count: 4,
-          minCorrect: 3,
-          icon: "🎮",
-          transcript: "Desafio final do módulo 5: 4 perguntas."
+          count: 1,
+          minCorrect: 1,
+          icon: "🧩",
+          body: "Associe cada <strong>exercício</strong> à <strong>região do corpo</strong> que ele alonga. São <strong>8 pares</strong> — clique em um exercício e depois na região correspondente. Até <strong>50 pontos</strong> conforme a rapidez.",
+          transcript: "Desafio: associar exercícios às regiões do corpo."
         },
         {
-          id: "m5-q1",
-          type: "question",
-          question: "Qual exercício alonga principalmente mãos e dedos?",
-          image: "assets/fotos/question-screen/postura.png",
-          alternatives: [
-            { id: "a", text: "Fechar a mão firme contra o pulso e abrir os dedos", correct: true },
-            { id: "b", text: "Girar os ombros para frente e para trás", correct: false },
-            { id: "c", text: "Inclinar lateralmente a cabeça", correct: false },
-            { id: "d", text: "Braço sobre a cabeça, inclinando o tronco", correct: false }
+          id: "m5-match",
+          type: "match",
+          kicker: "🕹️ Jogo de associação",
+          title: "Associe o exercício à região",
+          pairs: [
+            { ex: "Fechar a mão firme contra o pulso e abrir os dedos", body: "Mãos e dedos" },
+            { ex: "Entrelaçar os dedos e fazer movimento ondulatório", body: "Dedos" },
+            { ex: "Braço esticado, palma para fora, puxando com a outra mão", body: "Antebraço" },
+            { ex: "Unir as palmas no peito e girar os punhos", body: "Punhos" },
+            { ex: "Cotovelo atrás da cabeça, em direção ao ombro oposto", body: "Braço" },
+            { ex: "Braços atrás do corpo, dedos entrelaçados, afastando do corpo", body: "Ombros e peito" },
+            { ex: "Movimento de \"sim\" e \"não\" com a cabeça", body: "Pescoço" },
+            { ex: "Braço sobre a cabeça, inclinando lateralmente", body: "Tronco" }
           ],
-          explanation: "Fechar a mão contra o pulso e abrir os dedos alonga mãos e dedos.",
-          transcript: "Pergunta 1 do módulo 5."
-        },
-        {
-          id: "m5-q2",
-          type: "question",
-          question: "Qual exercício alonga principalmente o antebraço?",
-          image: "assets/fotos/question-screen/postura.png",
-          alternatives: [
-            { id: "a", text: "Movimento de \"sim\" e \"não\" com a cabeça", correct: false },
-            { id: "b", text: "Braço esticado, palma para fora, puxando com a outra mão", correct: true },
-            { id: "c", text: "Unir as palmas no peito e girar os punhos", correct: false },
-            { id: "d", text: "Elevar os ombros ao inspirar", correct: false }
-          ],
-          explanation: "Puxar a palma para fora alonga o antebraço.",
-          transcript: "Pergunta 2 do módulo 5."
-        },
-        {
-          id: "m5-q3",
-          type: "question",
-          question: "Qual exercício alonga principalmente o pescoço?",
-          image: "assets/fotos/question-screen/postura.png",
-          alternatives: [
-            { id: "a", text: "Cotovelo atrás da cabeça", correct: false },
-            { id: "b", text: "Entrelaçar os dedos e ondular", correct: false },
-            { id: "c", text: "Movimento de \"sim\" e \"não\" com a cabeça", correct: true },
-            { id: "d", text: "Braços atrás do corpo", correct: false }
-          ],
-          explanation: "Sim e não com a cabeça alongam o pescoço.",
-          transcript: "Pergunta 3 do módulo 5."
-        },
-        {
-          id: "m5-q4",
-          type: "question",
-          question: "Qual exercício alonga principalmente o tronco?",
-          image: "assets/fotos/question-screen/postura.png",
-          alternatives: [
-            { id: "a", text: "Braço sobre a cabeça, inclinando lateralmente o tronco", correct: true },
-            { id: "b", text: "Fechar a mão contra o pulso", correct: false },
-            { id: "c", text: "Girar os polegares", correct: false },
-            { id: "d", text: "Unir as palmas no peito", correct: false }
-          ],
-          explanation: "Inclinar o tronco com o braço sobre a cabeça alonga o tronco.",
-          transcript: "Pergunta 4 do módulo 5."
+          transcript: "Jogo: associe 8 exercícios às regiões do corpo."
         },
         {
           id: "m5-reflexao",
-          type: "content",
+          type: "reflect",
           kicker: "💭 Reflexão",
           title: "Antes de encerrar",
-          body: "Quando você vai praticar esses alongamentos?",
-          items: [
-            { icon: "🌅", text: "No início do turno" },
+          prompt: "Quando você vai praticar esses alongamentos?",
+          choices: [
+            { icon: "🌅", text: "Início do turno" },
             { icon: "☕", text: "Na pausa" },
-            { icon: "🏠", text: "Antes de ir para casa" }
+            { icon: "🏠", text: "Antes de casa" }
           ],
-          quote: "Não se esqueça de pensar neste assunto todos os dias. Cuidar da sua postura hoje é evitar dores e afastamentos amanhã — pequenos ajustes, repetidos todos os dias, fazem toda a diferença.",
+          answer: "Não se esqueça de pensar neste assunto todos os dias. Cuidar da sua postura hoje é evitar dores e afastamentos amanhã — pequenos ajustes, repetidos todos os dias, fazem toda a diferença.",
           transcript: "Antes de encerrar: escolha quando praticar os alongamentos."
         },
         {

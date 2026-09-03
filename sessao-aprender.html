@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Sessão Aprender</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css">
+  <link rel="stylesheet" href="question-screen.css?v=act2">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -142,8 +142,8 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js"></script>
-  <script src="question-screen.js"></script>
+  <script src="question-screen-data.js?v=act2"></script>
+  <script src="question-screen.js?v=act2"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -170,6 +170,10 @@
           s.type === 'content' ? 'Texto' :
           s.type === 'quiz-intro' ? 'Desafio' :
           s.type === 'question' ? 'Pergunta' :
+          s.type === 'reflect' ? 'Reflexão' :
+          s.type === 'compare' ? 'Compare' :
+          s.type === 'order' ? 'Ordenar' :
+          s.type === 'match' ? 'Associação' :
           s.type === 'finale' ? 'Conclusão' :
           s.type
         )
@@ -198,7 +202,16 @@
   };
   var sessionAnswers = {};
   var PTS_MAX = 50;
-  var questionCount = catalog.filter(function (item) { return item.type === 'question'; }).length;
+  function isScoreType(type) {
+    return type === 'question' || type === 'order' || type === 'match';
+  }
+  function isGateType(type) {
+    return isScoreType(type) || type === 'reflect' || type === 'compare';
+  }
+  function isQuizStep(s) {
+    return !!(s && isScoreType(s.type));
+  }
+  var questionCount = catalog.filter(function (item) { return isScoreType(item.type); }).length;
 
   function sessionTotals() {
     var pts = 0;
@@ -270,24 +283,24 @@
     var list = screens();
     var n = 0;
     for (var i = startIdx + 1; i < list.length; i++) {
-      if (list[i].type !== 'question') break;
+      if (!isScoreType(list[i].type)) break;
       n++;
     }
-    return n;
+    return n || 1;
   }
 
   function isLastQuizQuestion() {
     var s = current();
-    if (!s || s.type !== 'question') return false;
+    if (!isQuizStep(s)) return false;
     var next = screens()[slideIndex + 1];
-    return !next || next.type !== 'question';
+    return !isQuizStep(next);
   }
 
   function clearQuizAnswers() {
     var list = screens();
     if (quizState.introIndex < 0) return;
     for (var i = quizState.introIndex + 1; i < list.length; i++) {
-      if (list[i].type !== 'question') break;
+      if (!isScoreType(list[i].type)) break;
       delete answered[list[i].id];
       delete sessionAnswers[list[i].id];
     }
@@ -424,6 +437,7 @@
     var s = current();
     if (!s) return false;
     if (s.type === 'question') return !!answered[s.id];
+    if (isGateType(s.type)) return !!answered[s.id];
     return true;
   }
 
@@ -505,7 +519,7 @@
     quizState.active = false;
     var list = screens();
     var next = slideIndex + 1;
-    while (next < list.length && list[next].type === 'question') next++;
+    while (next < list.length && isScoreType(list[next].type)) next++;
     if (next >= list.length) {
       completeCurrentModule();
       showMenu();
@@ -536,7 +550,7 @@
       return;
     }
     var s = current();
-    if (s && s.type === 'question' && answered[s.id] && isLastQuizQuestion()) {
+    if (s && isQuizStep(s) && answered[s.id] && isLastQuizQuestion()) {
       showQuizResult();
       return;
     }
@@ -629,6 +643,10 @@
       type === 'content' ? 'Texto' :
       type === 'quiz-intro' ? 'Desafio' :
       type === 'question' ? 'Pergunta' :
+      type === 'reflect' ? 'Reflexão' :
+      type === 'compare' ? 'Compare' :
+      type === 'order' ? 'Ordenar' :
+      type === 'match' ? 'Associação' :
       type === 'finale' ? 'Conclusão' :
       type || 'Tela'
     );
@@ -645,7 +663,7 @@
     var total = 0;
     var min = 0;
     for (i = intro + 1; i < list.length; i++) {
-      if (list[i].type === 'question') total++;
+      if (isScoreType(list[i].type)) total++;
     }
     min = list[intro].minCorrect != null ? Number(list[intro].minCorrect) : Math.ceil(total * 0.75);
     quizState = {
@@ -660,8 +678,8 @@
       streak: 0,
       bestStreak: 0
     };
-    for (i = intro + 1; i < list.length; i++) {
-      if (list[i].type === 'question' && list[i].id) answered[list[i].id] = true;
+    for (i = 0; i < list.length; i++) {
+      if (isGateType(list[i].type) && list[i].id) answered[list[i].id] = true;
     }
     if (targetSi > intro) showingResult = false;
   }
@@ -684,7 +702,7 @@
     mode = 'play';
     brandTxt.textContent = 'Módulo ' + currentMod().id;
     var s = current();
-    if (s && (s.type === 'question' || s.type === 'quiz-intro' || s.type === 'finale')) {
+    if (s && (isQuizStep(s) || s.type === 'quiz-intro' || s.type === 'finale')) {
       prepareQuizForJump(si);
     }
     mountSlide();
@@ -789,12 +807,12 @@
 
     if (qs) qs.destroy();
     qs = QuestionScreen.mount(shell, payload, {
-      quizScoring: quizState.active && s.type === 'question' && !s.opinion,
+      quizScoring: quizState.active && isQuizStep(s) && !s.opinion,
       maxPoints: PTS_MAX,
       time: s.time || 12,
       onSelect: function (result) {
         answered[s.id] = true;
-        if (quizState.active && s.type === 'question' && !s.opinion) {
+        if (quizState.active && isQuizStep(s) && !s.opinion) {
           var pts = (result && result.points) || 0;
           sessionAnswers[s.id] = { pts: pts, correct: !!(result && result.correct) };
           quizState.answered += 1;
@@ -809,16 +827,17 @@
         }
         updateNav();
         updatePtsChip();
+        if (!isQuizStep(s)) return;
         clearAutoAdvance();
         autoAdvanceTimer = setTimeout(function () {
           if (isLastQuizQuestion()) showQuizResult();
           else go(1);
-        }, 3000);
+        }, s.type === 'order' || s.type === 'match' ? 1600 : 3000);
       },
       onContinue: handleContinue
     });
 
-    if (s.type !== 'question') answered[s.id] = true;
+    if (!isGateType(s.type)) answered[s.id] = true;
     if (s.type === 'finale') completeCurrentModule();
     renderProgress();
     updateNav();
@@ -840,7 +859,7 @@
     }
     if (delta > 0) {
       var s = current();
-      if (s && s.type === 'question' && answered[s.id] && isLastQuizQuestion()) {
+      if (s && isQuizStep(s) && answered[s.id] && isLastQuizQuestion()) {
         showQuizResult();
         return;
       }

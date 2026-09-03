@@ -9,6 +9,10 @@
  *  - quiz-intro: { type, title, body?, count?, minCorrect?, image? }
  *  - quiz-result: { type, passed, score, total, minCorrect, title? }
  *  - finale:   { type, title?, body?, eyebrow?, chips?, image?, kicker? }
+ *  - reflect:  { type, prompt, answer, choices?[{icon,text}] }
+ *  - compare:  { type, compare:[{ok,label,text}] }
+ *  - order:    { type, items:[{key,text,rank}], time? }
+ *  - match:    { type, pairs:[{ex,body}] }
  *  - question: { type, question, alternatives[2..4], explanation?, image?, opinion? }
  *
  * video: se tiver `video` (mp4) ou `youtube` (id/url), toca o player;
@@ -232,6 +236,104 @@
       </article>`;
   }
 
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function reflectHTML(data) {
+    var choices = Array.isArray(data.choices) ? data.choices : [];
+    var choiceHtml = choices.length
+      ? `<div class="qs-reflect-choices">${choices.map(function (c, i) {
+          return `<button type="button" class="qs-reflect-choice" data-qs-choice="${i}">${c.icon ? `<span aria-hidden="true">${esc(c.icon)}</span>` : ''}${esc(c.text || c.label || '')}</button>`;
+        }).join('')}</div>`
+      : `<button type="button" class="qs-reflect-tap" data-qs-reveal>Toque para pensar</button>`;
+    return `
+      <article class="qs-screen is-content is-text is-reflect" data-qs-root data-type="reflect">
+        <div class="qs-panel qs-panel-text">
+          ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
+          <h2 class="qs-title">${esc(data.title || '')}</h2>
+          <div class="qs-reflect">
+            <p class="qs-reflect-prompt">${esc(data.prompt || data.body || '')}</p>
+            <div class="qs-reflect-mark" aria-hidden="true">?</div>
+            ${choiceHtml}
+            <p class="qs-reflect-answer" data-qs-answer hidden>${esc(data.answer || data.quote || '')}</p>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function compareHTML(data) {
+    var sides = Array.isArray(data.compare) ? data.compare : [];
+    return `
+      <article class="qs-screen is-content is-text is-compare" data-qs-root data-type="compare">
+        <div class="qs-panel qs-panel-text">
+          ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
+          <h2 class="qs-title">${esc(data.title || '')}</h2>
+          <p class="qs-compare-guide">${esc(data.body || 'Toque nos dois cards para comparar')}</p>
+          <div class="qs-compare">${sides.map(function (c, i) {
+            var ok = !!c.ok;
+            return `<button type="button" class="qs-compare-col ${ok ? 'is-ok' : 'is-bad'}" data-qs-compare="${i}">
+              <div class="qs-compare-lbl">${esc(c.label || (ok ? '✓ Correto' : '✕ Evitar'))}</div>
+              <p class="qs-compare-hint">Toque para ver</p>
+              <p class="qs-compare-reveal" hidden>${esc(c.text || c.body || '')}</p>
+            </button>`;
+          }).join('')}</div>
+        </div>
+      </article>`;
+  }
+
+  function orderHTML(data) {
+    var items = Array.isArray(data.items) ? data.items : [];
+    var cards = shuffle(items).map(function (it) {
+      return `<button type="button" class="qs-seq-card" data-qs-seq="${esc(it.key)}">
+        <span class="qs-seq-badge" aria-hidden="true"></span>
+        <span>${esc(it.text)}</span>
+      </button>`;
+    }).join('');
+    return `
+      <article class="qs-screen is-content is-text is-order is-timed" data-qs-root data-type="order">
+        <div class="qs-qbar-wrap"><div class="qs-qbar"><i data-qs-timer></i></div></div>
+        <div class="qs-panel qs-panel-text">
+          ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
+          <h2 class="qs-title">${esc(data.title || 'Ordene a rotina')}</h2>
+          <p class="qs-body">${esc(data.body || 'Toque nos cuidados na ordem que você seguiria.')}</p>
+          <p class="qs-seq-progress" data-qs-seq-progress>0 de ${items.length} selecionados</p>
+          <div class="qs-seq-wrap">${cards}</div>
+          <p class="qs-seq-fb" data-qs-seq-fb hidden></p>
+        </div>
+      </article>`;
+  }
+
+  function matchHTML(data) {
+    var pairs = Array.isArray(data.pairs) ? data.pairs : [];
+    return `
+      <article class="qs-screen is-content is-text is-match is-dense" data-qs-root data-type="match">
+        <div class="qs-panel qs-panel-text">
+          ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
+          <h2 class="qs-title">${esc(data.title || 'Associe os pares')}</h2>
+          <div class="qs-match-hud">
+            <span data-qs-match-time>⏱️ 0s</span>
+            <span data-qs-match-progress>0 de ${pairs.length} pares</span>
+          </div>
+          <div class="qs-match">
+            <div>
+              <div class="qs-match-col-title">Exercício</div>
+              <div data-qs-match-ex></div>
+            </div>
+            <div>
+              <div class="qs-match-col-title">Região do corpo</div>
+              <div data-qs-match-body></div>
+            </div>
+          </div>
+        </div>
+      </article>`;
+  }
+
   function quizIntroHTML(data) {
     var count = data.count != null ? Number(data.count) : null;
     var min = data.minCorrect != null ? Number(data.minCorrect) : null;
@@ -349,6 +451,10 @@
     else if (type === 'content') html = contentHTML(this.data);
     else if (type === 'video') html = videoHTML(this.data);
     else if (type === 'image') html = imageHTML(this.data);
+    else if (type === 'reflect') html = reflectHTML(this.data);
+    else if (type === 'compare') html = compareHTML(this.data);
+    else if (type === 'order') html = orderHTML(this.data);
+    else if (type === 'match') html = matchHTML(this.data);
     else if (type === 'quiz-intro') html = quizIntroHTML(this.data);
     else if (type === 'quiz-result') html = quizResultHTML(this.data);
 
@@ -357,13 +463,18 @@
     this.el.removeEventListener('click', this._onClick);
     this.el.addEventListener('click', this._onClick);
 
-    if (type !== 'question') this.state.answered = true;
+    var gated = type === 'question' || type === 'order' || type === 'match' || type === 'reflect' || type === 'compare';
+    if (!gated) this.state.answered = true;
 
     if (type === 'video' && (this.data.embed || this.data.panda || this.data.youtube || this.data.video)) {
       this._bindVideoTags();
     }
+    if (type === 'reflect') this._bindReflect();
+    if (type === 'compare') this._bindCompare();
+    if (type === 'order') this._bindOrder();
+    if (type === 'match') this._bindMatch();
 
-    if (type === 'question' && this.options.quizScoring) {
+    if ((type === 'question' || type === 'order') && this.options.quizScoring) {
       if (this.root) this.root.classList.add('is-timed');
       this._startTimer();
     }
@@ -505,7 +616,201 @@
 
   QuestionScreen.prototype.timesUp = function () {
     if (this.state.answered) return;
+    if (this.data.type === 'order') {
+      this._finishOrder(true);
+      return;
+    }
     this.select(-1, { timedOut: true });
+  };
+
+  QuestionScreen.prototype._complete = function (info) {
+    if (this.state.answered && this.data.type !== 'match') return;
+    this.state.answered = true;
+    this._stopTimer();
+    if (typeof this.options.onSelect === 'function') {
+      this.options.onSelect(Object.assign({
+        correct: true,
+        points: 0,
+        timedOut: false,
+        data: this.data
+      }, info || {}));
+    }
+  };
+
+  QuestionScreen.prototype._bindReflect = function () {
+    var self = this;
+    var root = this.el;
+    var answer = root.querySelector('[data-qs-answer]');
+    function reveal(btn) {
+      if (btn) btn.classList.add('is-chosen');
+      if (answer) {
+        answer.hidden = false;
+        answer.classList.add('show');
+      }
+      var tap = root.querySelector('[data-qs-reveal]');
+      if (tap) tap.hidden = true;
+      if (!self.state.answered) self._complete({ kind: 'reflect' });
+    }
+    root.querySelectorAll('[data-qs-choice]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        root.querySelectorAll('[data-qs-choice]').forEach(function (b) { b.classList.remove('is-chosen'); });
+        reveal(btn);
+      });
+    });
+    var tap = root.querySelector('[data-qs-reveal]');
+    if (tap) tap.addEventListener('click', function () { reveal(tap); });
+  };
+
+  QuestionScreen.prototype._bindCompare = function () {
+    var self = this;
+    var opened = {};
+    var cols = this.el.querySelectorAll('[data-qs-compare]');
+    cols.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (btn.classList.contains('is-open')) return;
+        btn.classList.add('is-open');
+        var hint = btn.querySelector('.qs-compare-hint');
+        var reveal = btn.querySelector('.qs-compare-reveal');
+        if (hint) hint.hidden = true;
+        if (reveal) reveal.hidden = false;
+        opened[btn.getAttribute('data-qs-compare')] = true;
+        if (Object.keys(opened).length >= cols.length) self._complete({ kind: 'compare' });
+      });
+    });
+  };
+
+  QuestionScreen.prototype._bindOrder = function () {
+    var self = this;
+    this._seqTapped = [];
+    this.el.querySelectorAll('[data-qs-seq]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (self.state.answered || btn.classList.contains('is-picked')) return;
+        var key = btn.getAttribute('data-qs-seq');
+        self._seqTapped.push(key);
+        btn.classList.add('is-picked');
+        var badge = btn.querySelector('.qs-seq-badge');
+        if (badge) badge.textContent = String(self._seqTapped.length);
+        var prog = self.el.querySelector('[data-qs-seq-progress]');
+        var total = (self.data.items || []).length;
+        if (prog) prog.textContent = self._seqTapped.length + ' de ' + total + ' selecionados';
+        if (self._seqTapped.length >= total) self._finishOrder(false);
+      });
+    });
+  };
+
+  QuestionScreen.prototype._finishOrder = function (timedOut) {
+    if (this.state.answered) return;
+    this._stopTimer();
+    var items = this.data.items || [];
+    var expected = items.slice().sort(function (a, b) { return a.rank - b.rank; }).map(function (it) { return it.key; });
+    var tapped = this._seqTapped || [];
+    var correct = !timedOut && tapped.length === expected.length;
+    if (correct) {
+      for (var i = 0; i < expected.length; i++) {
+        if (tapped[i] !== expected[i]) { correct = false; break; }
+      }
+    }
+    this.el.querySelectorAll('[data-qs-seq]').forEach(function (c) {
+      c.classList.add('is-picked');
+      c.style.pointerEvents = 'none';
+    });
+    var fb = this.el.querySelector('[data-qs-seq-fb]');
+    if (fb) {
+      fb.hidden = false;
+      fb.className = 'qs-seq-fb ' + (correct ? 'is-ok' : 'is-nok');
+      var orderTxt = items.slice().sort(function (a, b) { return a.rank - b.rank; }).map(function (it, i) {
+        return (i + 1) + '. ' + it.text;
+      }).join(' · ');
+      fb.textContent = (timedOut ? 'Tempo esgotado. ' : '') + (correct ? 'Ordem certa! ' : 'Essa não é a ordem mais lógica. ') + orderTxt;
+    }
+    var pts = this.options.quizScoring ? this._quizPoints(correct) : 0;
+    this._complete({ kind: 'order', correct: correct, points: pts, timedOut: !!timedOut });
+  };
+
+  QuestionScreen.prototype._bindMatch = function () {
+    var self = this;
+    var pairs = this.data.pairs || [];
+    var exOrder = pairs.map(function (_, i) { return i; });
+    var bodyOrder = shuffle(exOrder);
+    var matched = {};
+    var matchedCount = 0;
+    var selectedEx = null;
+    var selectedBody = null;
+    var elapsed = 0;
+    this._matchTick = setInterval(function () {
+      elapsed += 1;
+      var el = self.el.querySelector('[data-qs-match-time]');
+      if (el) el.textContent = '⏱️ ' + elapsed + 's';
+    }, 1000);
+
+    function render() {
+      var exCol = self.el.querySelector('[data-qs-match-ex]');
+      var bodyCol = self.el.querySelector('[data-qs-match-body]');
+      if (!exCol || !bodyCol) return;
+      exCol.innerHTML = '';
+      bodyCol.innerHTML = '';
+      exOrder.forEach(function (id) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'qs-match-item' + (matched[id] ? ' is-matched' : '');
+        btn.textContent = pairs[id].ex;
+        if (matched[id]) btn.disabled = true;
+        btn.addEventListener('click', function () { pick('ex', id, btn); });
+        exCol.appendChild(btn);
+      });
+      bodyOrder.forEach(function (id) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'qs-match-item' + (matched[id] ? ' is-matched' : '');
+        btn.textContent = pairs[id].body;
+        if (matched[id]) btn.disabled = true;
+        btn.addEventListener('click', function () { pick('body', id, btn); });
+        bodyCol.appendChild(btn);
+      });
+      var prog = self.el.querySelector('[data-qs-match-progress]');
+      if (prog) prog.textContent = matchedCount + ' de ' + pairs.length + ' pares';
+    }
+
+    function clearSel() {
+      self.el.querySelectorAll('.qs-match-item').forEach(function (el) { el.classList.remove('is-selected'); });
+      selectedEx = null;
+      selectedBody = null;
+    }
+
+    function pick(side, id, btn) {
+      if (matched[id] || self.state.answered) return;
+      var sel = side === 'ex' ? '[data-qs-match-ex] .qs-match-item' : '[data-qs-match-body] .qs-match-item';
+      self.el.querySelectorAll(sel).forEach(function (el) { el.classList.remove('is-selected'); });
+      btn.classList.add('is-selected');
+      if (side === 'ex') selectedEx = id;
+      else selectedBody = id;
+      if (selectedEx == null || selectedBody == null) return;
+      if (selectedEx === selectedBody) {
+        matched[selectedEx] = true;
+        matchedCount += 1;
+        clearSel();
+        render();
+        if (matchedCount >= pairs.length) {
+          if (self._matchTick) { clearInterval(self._matchTick); self._matchTick = null; }
+          var cap = 90;
+          var ratio = Math.max(0, Math.min(1, 1 - (elapsed / cap)));
+          var max = self.options.maxPoints != null ? Number(self.options.maxPoints) : 50;
+          var pts = Math.max(5, Math.min(max, Math.round(max * (0.4 + 0.6 * ratio))));
+          self._complete({ kind: 'match', correct: true, points: pts, elapsed: elapsed });
+        }
+      } else {
+        var a = self.el.querySelector('[data-qs-match-ex] .is-selected');
+        var b = self.el.querySelector('[data-qs-match-body] .is-selected');
+        [a, b].forEach(function (el) {
+          if (!el) return;
+          el.classList.add('is-wrong');
+          setTimeout(function () { el.classList.remove('is-wrong'); }, 400);
+        });
+        setTimeout(clearSel, 420);
+      }
+    }
+
+    render();
   };
 
   QuestionScreen.prototype.select = function (index, extra) {
@@ -589,6 +894,10 @@
 
   QuestionScreen.prototype.destroy = function () {
     this._stopTimer();
+    if (this._matchTick) {
+      clearInterval(this._matchTick);
+      this._matchTick = null;
+    }
     var vid = this.el.querySelector('video');
     if (vid) { try { vid.pause(); } catch (e) {} }
     if (this._onVideoMsg) {
