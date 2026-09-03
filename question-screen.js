@@ -21,6 +21,69 @@
 (function (global) {
   'use strict';
 
+  var sfxCtx = null;
+  function ensureSfx() {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!sfxCtx) sfxCtx = new AC();
+    if (sfxCtx.state === 'suspended') {
+      try { sfxCtx.resume(); } catch (e) {}
+    }
+    return sfxCtx;
+  }
+
+  function playBeep(type) {
+    var ctx = ensureSfx();
+    if (!ctx) return;
+    try {
+      var now = ctx.currentTime;
+      function beepNote(freq, t, dur, vol, wave, slideTo) {
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = wave || 'sine';
+        osc.frequency.setValueAtTime(freq, now + t);
+        if (slideTo) osc.frequency.exponentialRampToValueAtTime(Math.max(40, slideTo), now + t + dur);
+        gain.gain.setValueAtTime(0.0001, now + t);
+        gain.gain.exponentialRampToValueAtTime(vol, now + t + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + t + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + t);
+        osc.stop(now + t + dur + 0.02);
+      }
+      if (type === 'click' || type === 'flip') {
+        beepNote(type === 'flip' ? 520 : 880, 0, 0.07, 0.08, 'sine', type === 'flip' ? 680 : 1240);
+      } else if (type === 'ok' || type === 'correct') {
+        beepNote(523.25, 0, 0.12, 0.16, 'sine');
+        beepNote(659.25, 0.08, 0.12, 0.16, 'sine');
+        beepNote(783.99, 0.16, 0.22, 0.16, 'sine');
+      } else if (type === 'nok') {
+        beepNote(340, 0, 0.28, 0.15, 'triangle', 130);
+      } else if (type === 'end') {
+        beepNote(523.25, 0, 0.16, 0.18, 'triangle');
+        beepNote(659.25, 0.1, 0.16, 0.18, 'triangle');
+        beepNote(783.99, 0.2, 0.18, 0.18, 'triangle');
+        beepNote(1046.5, 0.34, 0.4, 0.2, 'triangle');
+      } else {
+        beepNote(800, 0, 0.07, 0.08, 'sine', 1200);
+      }
+    } catch (e) {}
+  }
+  global.playBeep = playBeep;
+  if (typeof document !== 'undefined') {
+    var unlockSfx = function () {
+      ensureSfx();
+      document.removeEventListener('pointerdown', unlockSfx, true);
+      document.removeEventListener('keydown', unlockSfx, true);
+    };
+    document.addEventListener('pointerdown', unlockSfx, true);
+    document.addEventListener('keydown', unlockSfx, true);
+  }
+
+  function beep(type) {
+    try { playBeep(type); } catch (e) {}
+  }
+
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;')
@@ -601,10 +664,12 @@
     var retry = e.target.closest('[data-qs-retry]');
     var finish = e.target.closest('[data-qs-finish]');
     if (opt && !this.state.answered) {
+      beep('click');
       this.select(+opt.dataset.index);
       return;
     }
     if (start || retry || finish) {
+      beep('click');
       if (typeof this.options.onContinue === 'function') {
         this.options.onContinue({
           data: this.data,
@@ -642,6 +707,7 @@
     var root = this.el;
     var answer = root.querySelector('[data-qs-answer]');
     function reveal(btn) {
+      beep('click');
       if (btn) btn.classList.add('is-chosen');
       if (answer) {
         answer.hidden = false;
@@ -649,7 +715,10 @@
       }
       var tap = root.querySelector('[data-qs-reveal]');
       if (tap) tap.hidden = true;
-      if (!self.state.answered) self._complete({ kind: 'reflect' });
+      if (!self.state.answered) {
+        beep('ok');
+        self._complete({ kind: 'reflect' });
+      }
     }
     root.querySelectorAll('[data-qs-choice]').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -669,12 +738,16 @@
       btn.addEventListener('click', function () {
         if (btn.classList.contains('is-open')) return;
         btn.classList.add('is-open');
+        beep('click');
         var hint = btn.querySelector('.qs-compare-hint');
         var reveal = btn.querySelector('.qs-compare-reveal');
         if (hint) hint.hidden = true;
         if (reveal) reveal.hidden = false;
         opened[btn.getAttribute('data-qs-compare')] = true;
-        if (Object.keys(opened).length >= cols.length) self._complete({ kind: 'compare' });
+        if (Object.keys(opened).length >= cols.length) {
+          beep('ok');
+          self._complete({ kind: 'compare' });
+        }
       });
     });
   };
@@ -685,6 +758,7 @@
     this.el.querySelectorAll('[data-qs-seq]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         if (self.state.answered || btn.classList.contains('is-picked')) return;
+        beep('click');
         var key = btn.getAttribute('data-qs-seq');
         self._seqTapped.push(key);
         btn.classList.add('is-picked');
@@ -724,6 +798,7 @@
       fb.textContent = (timedOut ? 'Tempo esgotado. ' : '') + (correct ? 'Ordem certa! ' : 'Essa não é a ordem mais lógica. ') + orderTxt;
     }
     var pts = this.options.quizScoring ? this._quizPoints(correct) : 0;
+    beep(correct ? 'ok' : 'nok');
     this._complete({ kind: 'order', correct: correct, points: pts, timedOut: !!timedOut });
   };
 
@@ -779,6 +854,7 @@
 
     function pick(side, id, btn) {
       if (matched[id] || self.state.answered) return;
+      beep('click');
       var sel = side === 'ex' ? '[data-qs-match-ex] .qs-match-item' : '[data-qs-match-body] .qs-match-item';
       self.el.querySelectorAll(sel).forEach(function (el) { el.classList.remove('is-selected'); });
       btn.classList.add('is-selected');
@@ -796,9 +872,13 @@
           var ratio = Math.max(0, Math.min(1, 1 - (elapsed / cap)));
           var max = self.options.maxPoints != null ? Number(self.options.maxPoints) : 50;
           var pts = Math.max(5, Math.min(max, Math.round(max * (0.4 + 0.6 * ratio))));
+          beep('end');
           self._complete({ kind: 'match', correct: true, points: pts, elapsed: elapsed });
+        } else {
+          beep('ok');
         }
       } else {
+        beep('nok');
         var a = self.el.querySelector('[data-qs-match-ex] .is-selected');
         var b = self.el.querySelector('[data-qs-match-body] .is-selected');
         [a, b].forEach(function (el) {
@@ -880,6 +960,8 @@
       explain.textContent = this.data.explanation;
       explain.classList.add('show', isCorrect ? 'is-ok' : 'is-nok');
     }
+
+    beep(isCorrect ? 'ok' : 'nok');
 
     if (typeof this.options.onSelect === 'function') {
       this.options.onSelect({

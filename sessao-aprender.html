@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Sessão Aprender</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=act2">
+  <link rel="stylesheet" href="question-screen.css?v=sfx1">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -142,8 +142,8 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=act2"></script>
-  <script src="question-screen.js?v=act2"></script>
+  <script src="question-screen-data.js?v=sfx1"></script>
+  <script src="question-screen.js?v=sfx1"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -491,6 +491,9 @@
     renderProgress();
     updateNav();
     updatePtsChip();
+    if (quizState.passed) {
+      try { if (typeof playBeep === 'function') playBeep('end'); } catch (e) {}
+    }
     transcriptBody.textContent = quizState.passed
       ? ('Aprovado: ' + hits + ' de ' + total + '. ' + quizState.points + ' pontos. ' + medal.name + '.')
       : ('Não aprovado: ' + hits + ' de ' + total + '. Mínimo: ' + min + '.');
@@ -731,6 +734,7 @@
     box.innerHTML = html;
     box.querySelectorAll('[data-jump]').forEach(function (btn) {
       btn.addEventListener('click', function () {
+        sfx('click');
         jumpToPage(+btn.getAttribute('data-jump'));
       });
     });
@@ -787,6 +791,7 @@
       payload.medalName = medal.name;
       payload.medalRank = medal.rank;
       payload.body = 'Treinamento concluído. Até ' + PTS_MAX + ' pts por questão, conforme a rapidez.';
+      try { if (typeof playBeep === 'function') playBeep('end'); } catch (e) {}
     }
 
     if (s.type === 'quiz-intro') {
@@ -891,18 +896,26 @@
     }
   }
 
+  function sfx(type) {
+    try { if (typeof playBeep === 'function') playBeep(type); } catch (e) {}
+  }
+
   shell.addEventListener('click', function (e) {
     var card = e.target.closest('.qs-mod-card');
-    if (card) openModule(+card.dataset.mod);
+    if (card) {
+      sfx('click');
+      openModule(+card.dataset.mod);
+    }
   });
 
-  btnBack.addEventListener('click', function () { go(-1); });
-  btnFwd.addEventListener('click', function () { advance(); });
+  btnBack.addEventListener('click', function () { sfx('click'); go(-1); });
+  btnFwd.addEventListener('click', function () { sfx('click'); advance(); });
   document.getElementById('btnHome').addEventListener('click', function () {
+    sfx('click');
     if (mode === 'play') exitPlay();
     else showHome();
   });
-  document.getElementById('btnStartHome').addEventListener('click', showMenu);
+  document.getElementById('btnStartHome').addEventListener('click', function () { sfx('click'); showMenu(); });
   document.getElementById('btnTutorialHome').addEventListener('click', openTutorial);
   document.getElementById('btnTutorialClose').addEventListener('click', closeTutorial);
   document.getElementById('tutorialModal').addEventListener('click', function (e) {
@@ -1050,8 +1063,8 @@
       if (e.key === 'Enter') showMenu();
       return;
     }
-    if (e.key === 'ArrowRight') advance();
-    if (e.key === 'ArrowLeft') go(-1);
+    if (e.key === 'ArrowRight') { sfx('click'); advance(); }
+    if (e.key === 'ArrowLeft') { sfx('click'); go(-1); }
     if (e.key === 'Escape') {
       if (mode === 'play') exitPlay();
       else showHome();
