@@ -64,9 +64,10 @@
         <span id="brandTxt">NR 17</span>
       </div>
       <div class="qs-progress" id="progress" aria-label="Progresso"></div>
+      <div class="qs-pts" id="ptsChip" hidden>0 pts</div>
       <div class="qs-tools">
-        <button type="button" id="btnMode" title="Modo">
-          <span class="qs-label">Aprender</span>
+        <button type="button" id="btnMode" class="qs-sim-btn" title="Modo simulação" hidden aria-pressed="false">
+          <span class="qs-label" id="simLabel">Simulação: OFF</span>
         </button>
         <button type="button" id="btnMusic" title="Música" aria-pressed="false">🔇</button>
         <button type="button" id="btnTranscript" title="Transcrição">Aa</button>
@@ -117,6 +118,8 @@
     </div>
   </div>
 
+    <div class="qs-toast" id="simToast" hidden role="status"></div>
+
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
   <script src="question-screen-data.js"></script>
@@ -144,8 +147,27 @@
     minCorrect: 0,
     total: 0,
     introIndex: -1,
-    passed: false
+    passed: false,
+    points: 0,
+    streak: 0,
+    bestStreak: 0
   };
+
+  function quizMedal(passed, correct, total) {
+    var pct = total ? correct / total : 0;
+    if (pct >= 1) return { emoji: '🥇', name: 'Medalha de ouro', rank: 'gold' };
+    if (passed && pct >= 0.8) return { emoji: '🥈', name: 'Medalha de prata', rank: 'silver' };
+    if (passed) return { emoji: '🥉', name: 'Medalha de bronze', rank: 'bronze' };
+    return { emoji: '📚', name: '', rank: 'none' };
+  }
+
+  function updatePtsChip() {
+    var chip = document.getElementById('ptsChip');
+    if (!chip) return;
+    var on = mode === 'play' && (quizState.active || showingResult);
+    chip.hidden = !on;
+    chip.textContent = (quizState.points || 0) + ' pts';
+  }
 
   function clearAutoAdvance() {
     if (autoAdvanceTimer) {
@@ -162,9 +184,13 @@
       minCorrect: 0,
       total: 0,
       introIndex: -1,
-      passed: false
+      passed: false,
+      points: 0,
+      streak: 0,
+      bestStreak: 0
     };
     showingResult = false;
+    updatePtsChip();
   }
 
   function countQuizQuestionsFrom(startIdx) {
@@ -193,23 +219,16 @@
     }
   }
 
-  var PROGRESS_KEY = 'nr17-sessao-aprender-progress';
   var progress = { unlockedUpTo: 0, completed: {} };
-  try {
-    var saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
-    if (saved && typeof saved.unlockedUpTo === 'number') {
-      progress.unlockedUpTo = Math.max(0, Math.min(modules.length - 1, saved.unlockedUpTo));
-      progress.completed = saved.completed && typeof saved.completed === 'object' ? saved.completed : {};
-    }
-  } catch (err) {}
+  try { localStorage.removeItem('nr17-sessao-aprender-progress'); } catch (err) {}
 
-  function saveProgress() {
-    try {
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-    } catch (err) {}
-  }
+  var demoMode = false;
+  try { demoMode = sessionStorage.getItem('nr17-demoMode') === '1'; } catch (err) {}
+  var demoBtnVisible = false;
+  try { demoBtnVisible = sessionStorage.getItem('nr17-demoBtnVisible') === '1'; } catch (err) {}
 
   function isUnlocked(i) {
+    if (demoMode) return true;
     return i >= 0 && i <= progress.unlockedUpTo;
   }
 
@@ -223,7 +242,6 @@
     if (modIndex + 1 < modules.length) {
       progress.unlockedUpTo = Math.max(progress.unlockedUpTo, modIndex + 1);
     }
-    saveProgress();
   }
 
   function menuCallout() {
@@ -244,13 +262,17 @@
     var m = modules[next];
     if (next === 0 && !isCompleted(0)) {
       return {
-        title: 'Vamos começar pelo Módulo 1?',
-        body: (m.title || '') + ' — toque no card liberado para iniciar.'
+        title: demoMode ? 'Modo simulação ligado' : 'Vamos começar pelo Módulo 1?',
+        body: demoMode
+          ? 'Todos os módulos estão liberados. Avance sem travar em quiz ou vídeo.'
+          : ((m.title || '') + ' — toque no card liberado para iniciar.')
       };
     }
     return {
-      title: 'Módulo ' + m.id + ' liberado!',
-      body: (m.title || '') + ' — toque no card para continuar.'
+      title: demoMode ? 'Modo simulação ligado' : ('Módulo ' + m.id + ' liberado!'),
+      body: demoMode
+        ? 'Todos os módulos estão liberados. Avance sem travar em quiz ou vídeo.'
+        : ((m.title || '') + ' — toque no card para continuar.')
     };
   }
 
@@ -268,8 +290,10 @@
   var bgMusic = document.getElementById('bg-music');
 
   brandTxt.textContent = (session.meta && session.meta.title) || 'NR 17';
-  bgMusic.src = (session.meta && session.meta.musicSrc) || 'musica/musica_foco.mp3';
-  bgMusic.volume = 0.35;
+  if (bgMusic) {
+    bgMusic.src = (session.meta && session.meta.musicSrc) || 'musica/musica_foco.mp3';
+    bgMusic.volume = 0.35;
+  }
 
   var sessionWave = document.getElementById('sessionWave');
 
@@ -309,6 +333,7 @@
   }
 
   function canForward() {
+    if (demoMode) return true;
     if (showingResult) return !!quizState.passed;
     var s = current();
     if (!s) return false;
@@ -340,18 +365,24 @@
     clearAutoAdvance();
     showingResult = true;
     var total = quizState.total || quizState.answered || 1;
-    var score = quizState.correct;
+    var hits = quizState.correct;
     var min = quizState.minCorrect || Math.ceil(total * 0.75);
-    quizState.passed = score >= min;
+    quizState.passed = hits >= min;
+    var medal = quizMedal(quizState.passed, hits, total);
 
     if (qs) qs.destroy();
     qs = QuestionScreen.mount(shell, {
       type: 'quiz-result',
       passed: quizState.passed,
-      score: score,
+      score: hits,
       total: total,
       minCorrect: min,
-      icon: quizState.passed ? '🏅' : '📚',
+      points: quizState.points,
+      streak: quizState.bestStreak,
+      medal: medal.emoji,
+      medalName: medal.name,
+      medalRank: medal.rank,
+      icon: medal.emoji,
       title: quizState.passed ? 'Desafio concluído!' : 'Desafio não concluído'
     }, {
       onContinue: handleContinue
@@ -359,9 +390,10 @@
 
     renderProgress();
     updateNav();
+    updatePtsChip();
     transcriptBody.textContent = quizState.passed
-      ? ('Aprovado: ' + score + ' de ' + total + '.')
-      : ('Não aprovado: ' + score + ' de ' + total + '. Mínimo: ' + min + '.');
+      ? ('Aprovado: ' + hits + ' de ' + total + '. ' + quizState.points + ' pontos. ' + medal.name + '.')
+      : ('Não aprovado: ' + hits + ' de ' + total + '. Mínimo: ' + min + '.');
   }
 
   function restartQuiz() {
@@ -371,6 +403,9 @@
     quizState.correct = 0;
     quizState.answered = 0;
     quizState.passed = false;
+    quizState.points = 0;
+    quizState.streak = 0;
+    quizState.bestStreak = 0;
     quizState.active = true;
     if (quizState.introIndex >= 0) {
       slideIndex = quizState.introIndex;
@@ -410,7 +445,7 @@
   function advance() {
     clearAutoAdvance();
     if (showingResult) {
-      if (quizState.passed) finishAfterQuiz();
+      if (quizState.passed || demoMode) finishAfterQuiz();
       return;
     }
     var s = current();
@@ -502,19 +537,32 @@
         minCorrect: s.minCorrect != null ? Number(s.minCorrect) : Math.ceil(total * 0.75),
         total: total,
         introIndex: slideIndex,
-        passed: false
+        passed: false,
+        points: 0,
+        streak: 0,
+        bestStreak: 0
       };
     }
 
     if (qs) qs.destroy();
     qs = QuestionScreen.mount(shell, payload, {
+      quizScoring: quizState.active && s.type === 'question' && !s.opinion,
+      time: s.time || 12,
       onSelect: function (result) {
         answered[s.id] = true;
         if (quizState.active && s.type === 'question' && !s.opinion) {
           quizState.answered += 1;
-          if (result && result.correct) quizState.correct += 1;
+          if (result && result.correct) {
+            quizState.correct += 1;
+            quizState.streak += 1;
+            quizState.bestStreak = Math.max(quizState.bestStreak, quizState.streak);
+            quizState.points += (result.points || 0);
+          } else {
+            quizState.streak = 0;
+          }
         }
         updateNav();
+        updatePtsChip();
         clearAutoAdvance();
         autoAdvanceTimer = setTimeout(function () {
           if (isLastQuizQuestion()) showQuizResult();
@@ -527,6 +575,7 @@
     if (s.type !== 'question') answered[s.id] = true;
     renderProgress();
     updateNav();
+    updatePtsChip();
     showTranscript();
   }
 
@@ -610,13 +659,67 @@
     btnMusic.classList.toggle('is-on', musicOn);
     btnMusic.setAttribute('aria-pressed', musicOn ? 'true' : 'false');
     btnMusic.textContent = musicOn ? '🔊' : '🔇';
-    if (musicOn) bgMusic.play().catch(function () {});
-    else bgMusic.pause();
+    if (musicOn && bgMusic) bgMusic.play().catch(function () {});
+    else if (bgMusic) bgMusic.pause();
   });
 
   document.getElementById('btnMode').addEventListener('click', function () {
-    alert('Modo Aprender\n\n• Conteúdo dentro do cartão\n• Atividades só no final de cada módulo\n• Use as setas para navegar');
+    toggleDemoMode();
   });
+
+  function applyDemoUI() {
+    var btn = document.getElementById('btnMode');
+    var label = document.getElementById('simLabel');
+    if (btn) {
+      btn.hidden = !demoBtnVisible;
+      btn.classList.toggle('is-on', !!demoMode);
+      btn.setAttribute('aria-pressed', demoMode ? 'true' : 'false');
+    }
+    if (label) label.textContent = demoMode ? 'Simulação: ON' : 'Simulação: OFF';
+    updateNav();
+  }
+
+  function showSimToast(on) {
+    var el = document.getElementById('simToast');
+    if (!el) return;
+    el.hidden = false;
+    el.textContent = on ? '🔓 Modo Simulação ATIVADO' : '🔒 Modo Simulação DESATIVADO';
+    el.classList.add('is-on');
+    clearTimeout(el._t);
+    el._t = setTimeout(function () {
+      el.classList.remove('is-on');
+      el.hidden = true;
+    }, 2500);
+  }
+
+  function toggleDemoMode() {
+    demoMode = !demoMode;
+    demoBtnVisible = true;
+    try {
+      sessionStorage.setItem('nr17-demoMode', demoMode ? '1' : '0');
+      sessionStorage.setItem('nr17-demoBtnVisible', '1');
+    } catch (err) {}
+    applyDemoUI();
+    showSimToast(demoMode);
+    if (mode === 'menu') showMenu();
+  }
+
+  (function initDemoShortcut() {
+    var seq = '';
+    var target = 'qa1010';
+    window.addEventListener('keydown', function (e) {
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || (e.target && e.target.isContentEditable)) return;
+      if (!e.key || e.key.length !== 1) return;
+      seq = (seq + e.key.toLowerCase()).slice(-target.length);
+      if (seq !== target) return;
+      seq = '';
+      toggleDemoMode();
+    });
+  })();
+
+  applyDemoUI();
 
   document.addEventListener('keydown', function (e) {
     if (!document.getElementById('tutorialModal').hidden && e.key === 'Escape') {

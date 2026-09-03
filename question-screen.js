@@ -149,6 +149,7 @@
     if (!desc && count) {
       desc = 'Responda <strong>' + count + '</strong> perguntas de múltipla escolha.';
       if (min) desc += ' Você precisa acertar no mínimo <strong>' + min + '</strong> para avançar.';
+      desc += ' Quanto mais rápido acertar, mais pontos.';
     }
     return `
       <article class="qs-screen is-quiz-intro" data-qs-root data-type="quiz-intro">
@@ -163,23 +164,35 @@
 
   function quizResultHTML(data) {
     var passed = !!data.passed;
-    var score = data.score != null ? data.score : 0;
+    var hits = data.score != null ? data.score : 0;
     var total = data.total != null ? data.total : 0;
     var min = data.minCorrect != null ? data.minCorrect : 0;
+    var points = data.points != null ? data.points : 0;
+    var streak = data.streak != null ? data.streak : 0;
+    var medal = data.medal || data.icon || (passed ? '🥇' : '📚');
+    var medalName = data.medalName || '';
+    var rank = data.medalRank || (passed ? 'gold' : 'none');
     var title = data.title || (passed ? 'Desafio concluído!' : 'Desafio não concluído');
     var desc = data.body || (passed
-      ? ('Você acertou <strong>' + score + '</strong> de <strong>' + total + '</strong> questões. Parabéns! Pode avançar.')
-      : ('Você acertou <strong>' + score + '</strong> de <strong>' + total + '</strong>. É necessário acertar pelo menos <strong>' + min + '</strong>. Estude e tente novamente.'));
+      ? ('Você acertou <strong>' + hits + '</strong> de <strong>' + total + '</strong> questões. Parabéns! Pode avançar.')
+      : ('Você acertou <strong>' + hits + '</strong> de <strong>' + total + '</strong>. É necessário acertar pelo menos <strong>' + min + '</strong>. Estude e tente novamente.'));
     var actions = passed
       ? `<button type="button" class="qs-quiz-intro-btn" data-qs-finish>Continuar</button>`
       : `<button type="button" class="qs-quiz-intro-btn" data-qs-retry>Jogar novamente</button>`;
     return `
       <article class="qs-screen is-quiz-result" data-qs-root data-type="quiz-result">
-        <div class="qs-quiz-result ${passed ? 'is-pass' : 'is-fail'}">
-          <div class="qs-quiz-result-icon" aria-hidden="true">${esc(data.icon || (passed ? '🏅' : '📚'))}</div>
+        <div class="qs-quiz-result ${passed ? 'is-pass' : 'is-fail'} medal-${esc(rank)}">
+          <div class="qs-medal" aria-hidden="true">
+            <span class="qs-medal-face">${esc(medal)}</span>
+          </div>
+          ${medalName ? `<div class="qs-medal-name">${esc(medalName)}</div>` : ''}
           <h2 class="qs-quiz-result-title">${esc(title)}</h2>
-          <div class="qs-quiz-result-score">${score}/${total}</div>
+          <div class="qs-quiz-result-points">${points}<small>pts</small></div>
           <p class="qs-quiz-result-desc">${desc}</p>
+          <div class="qs-quiz-result-stats">
+            <span>${hits}/${total} acertos</span>
+            <span>melhor sequência ${streak}</span>
+          </div>
           <div class="qs-quiz-result-actions">${actions}</div>
         </div>
       </article>`;
@@ -199,6 +212,7 @@
 
     return `
       <article class="qs-screen is-question" data-qs-root data-type="question">
+        <div class="qs-timer" aria-hidden="true"><i data-qs-timer></i></div>
         <div class="qs-media qs-media-hero">
           ${mediaHTML(data)}
           <div class="qs-ribbon" data-qs-ribbon role="status" aria-live="polite">
@@ -232,6 +246,7 @@
   };
 
   QuestionScreen.prototype.update = function (data) {
+    this._stopTimer();
     this.data = data || {};
     this.state.answered = false;
     this.state.selectedIndex = null;
@@ -257,9 +272,49 @@
       this._bindVideoTags();
     }
 
+    if (type === 'question' && this.options.quizScoring) {
+      if (this.root) this.root.classList.add('is-timed');
+      this._startTimer();
+    }
+
     if (typeof this.options.onRender === 'function') {
       this.options.onRender(this.data, this);
     }
+  };
+
+  QuestionScreen.prototype._stopTimer = function () {
+    if (this._tick) {
+      clearInterval(this._tick);
+      this._tick = null;
+    }
+  };
+
+  QuestionScreen.prototype._startTimer = function () {
+    this._stopTimer();
+    var self = this;
+    var total = Number(this.options.time || this.data.time || 12);
+    this._tTot = total;
+    this._tLeft = total;
+    var bar = this.el.querySelector('[data-qs-timer]');
+    if (bar) bar.style.width = '100%';
+    this._tick = setInterval(function () {
+      if (self.state.answered) {
+        self._stopTimer();
+        return;
+      }
+      self._tLeft -= 0.1;
+      if (bar) bar.style.width = (Math.max(0, self._tLeft / self._tTot) * 100) + '%';
+      if (self._tLeft <= 0) {
+        self._stopTimer();
+        self.timesUp();
+      }
+    }, 100);
+  };
+
+  QuestionScreen.prototype._quizPoints = function (correct) {
+    if (!correct) return 0;
+    var ratio = this._tTot ? Math.max(0, Math.min(1, this._tLeft / this._tTot)) : 1;
+    return Math.round(400 + (1000 - 400) * ratio);
   };
 
   QuestionScreen.prototype._hideVideoTags = function () {
@@ -351,24 +406,34 @@
     }
   };
 
-  QuestionScreen.prototype.select = function (index) {
+  QuestionScreen.prototype.timesUp = function () {
     if (this.state.answered) return;
-    var alts = this.data.alternatives || [];
-    if (index < 0 || index >= alts.length) return;
+    this.select(-1, { timedOut: true });
+  };
 
+  QuestionScreen.prototype.select = function (index, extra) {
+    if (this.state.answered) return;
+    extra = extra || {};
+    var alts = this.data.alternatives || [];
+    var timedOut = !!extra.timedOut || index < 0;
+    if (!timedOut && (index < 0 || index >= alts.length)) return;
+
+    this._stopTimer();
     this.state.answered = true;
-    this.state.selectedIndex = index;
+    this.state.selectedIndex = timedOut ? null : index;
     var opinion = !!this.data.opinion;
-    var chosen = alts[index];
+    var chosen = timedOut ? null : alts[index];
     var correctIndex = alts.findIndex(function (a) { return !!a.correct; });
-    var isCorrect = opinion ? true : !!(chosen && chosen.correct);
+    var isCorrect = timedOut ? false : (opinion ? true : !!(chosen && chosen.correct));
     this.state.correct = isCorrect;
+    var pts = this.options.quizScoring ? this._quizPoints(isCorrect) : 0;
+    this.state.points = pts;
 
     var buttons = this.el.querySelectorAll('.qs-opt');
     buttons.forEach(function (btn, i) {
       btn.disabled = true;
       btn.classList.add('is-revealed');
-      if (i === index) btn.classList.add('is-selected');
+      if (!timedOut && i === index) btn.classList.add('is-selected');
       if (opinion) {
         if (i === index) {
           btn.classList.add('is-correct');
@@ -381,7 +446,7 @@
       if (i === correctIndex) {
         btn.classList.add('is-correct');
         btn.querySelector('.qs-mark').textContent = '✓';
-      } else if (i === index) {
+      } else if (!timedOut && i === index) {
         btn.classList.add('is-wrong');
         btn.querySelector('.qs-mark').textContent = '✕';
       } else {
@@ -400,7 +465,12 @@
       var icon = ribbon.querySelector('[data-qs-ribbon-icon]');
       var text = ribbon.querySelector('[data-qs-ribbon-text]');
       if (icon) icon.textContent = isCorrect ? '✓' : '✕';
-      if (text) text.textContent = opinion ? 'Registrado' : (isCorrect ? 'Correto!' : 'Incorreto');
+      if (text) {
+        if (opinion) text.textContent = 'Registrado';
+        else if (timedOut) text.textContent = 'Tempo esgotado';
+        else if (isCorrect) text.textContent = pts ? ('Correto!  +' + pts) : 'Correto!';
+        else text.textContent = 'Incorreto';
+      }
     }
 
     var explain = this.el.querySelector('[data-qs-explain]');
@@ -412,13 +482,16 @@
     if (typeof this.options.onSelect === 'function') {
       this.options.onSelect({
         correct: isCorrect,
-        selectedIndex: index,
+        selectedIndex: this.state.selectedIndex,
+        points: pts,
+        timedOut: timedOut,
         data: this.data
       });
     }
   };
 
   QuestionScreen.prototype.destroy = function () {
+    this._stopTimer();
     var vid = this.el.querySelector('video');
     if (vid) { try { vid.pause(); } catch (e) {} }
     if (this._onVideoMsg) {
