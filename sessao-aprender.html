@@ -51,6 +51,11 @@
       <div class="qs-home-logo">
         <img src="assets/fotos/LOGO.png" alt="TecnoCursos">
       </div>
+      <div class="qs-wave" aria-hidden="true">
+        <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+          <path d="M0,55 C480,10 960,90 1440,40 L1440,100 L0,100 Z" fill="rgba(255, 64, 72, 0.07)" />
+        </svg>
+      </div>
     </section>
 
     <header class="qs-top" id="topBar" hidden>
@@ -75,14 +80,17 @@
       </button>
       <div class="qs-col">
         <div class="qs-shell" id="shell"></div>
-        <div class="qs-external-continue" id="extContinue">
-          <button type="button" class="qs-btn" id="btnExtContinue">Continuar</button>
-        </div>
       </div>
       <button class="qs-nav" id="btnFwd" aria-label="Próximo" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     </main>
+
+    <div class="qs-wave qs-wave-session" id="sessionWave" aria-hidden="true" hidden>
+      <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+        <path d="M0,55 C480,10 960,90 1440,40 L1440,100 L0,100 Z" fill="rgba(255, 64, 72, 0.07)" />
+      </svg>
+    </div>
   </div>
 
   <aside class="qs-transcript" id="transcript">
@@ -127,6 +135,124 @@
   var answered = {};
   var qs = null;
   var mode = 'home'; /* home | menu | play */
+  var showingResult = false;
+  var autoAdvanceTimer = null;
+  var quizState = {
+    active: false,
+    correct: 0,
+    answered: 0,
+    minCorrect: 0,
+    total: 0,
+    introIndex: -1,
+    passed: false
+  };
+
+  function clearAutoAdvance() {
+    if (autoAdvanceTimer) {
+      clearTimeout(autoAdvanceTimer);
+      autoAdvanceTimer = null;
+    }
+  }
+
+  function resetQuizState() {
+    quizState = {
+      active: false,
+      correct: 0,
+      answered: 0,
+      minCorrect: 0,
+      total: 0,
+      introIndex: -1,
+      passed: false
+    };
+    showingResult = false;
+  }
+
+  function countQuizQuestionsFrom(startIdx) {
+    var list = screens();
+    var n = 0;
+    for (var i = startIdx + 1; i < list.length; i++) {
+      if (list[i].type !== 'question') break;
+      n++;
+    }
+    return n;
+  }
+
+  function isLastQuizQuestion() {
+    var s = current();
+    if (!s || s.type !== 'question') return false;
+    var next = screens()[slideIndex + 1];
+    return !next || next.type !== 'question';
+  }
+
+  function clearQuizAnswers() {
+    var list = screens();
+    if (quizState.introIndex < 0) return;
+    for (var i = quizState.introIndex + 1; i < list.length; i++) {
+      if (list[i].type !== 'question') break;
+      delete answered[list[i].id];
+    }
+  }
+
+  var PROGRESS_KEY = 'nr17-sessao-aprender-progress';
+  var progress = { unlockedUpTo: 0, completed: {} };
+  try {
+    var saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
+    if (saved && typeof saved.unlockedUpTo === 'number') {
+      progress.unlockedUpTo = Math.max(0, Math.min(modules.length - 1, saved.unlockedUpTo));
+      progress.completed = saved.completed && typeof saved.completed === 'object' ? saved.completed : {};
+    }
+  } catch (err) {}
+
+  function saveProgress() {
+    try {
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+    } catch (err) {}
+  }
+
+  function isUnlocked(i) {
+    return i >= 0 && i <= progress.unlockedUpTo;
+  }
+
+  function isCompleted(i) {
+    return !!progress.completed[String(i)];
+  }
+
+  function completeCurrentModule() {
+    if (modIndex < 0) return;
+    progress.completed[String(modIndex)] = true;
+    if (modIndex + 1 < modules.length) {
+      progress.unlockedUpTo = Math.max(progress.unlockedUpTo, modIndex + 1);
+    }
+    saveProgress();
+  }
+
+  function menuCallout() {
+    var next = -1;
+    for (var i = 0; i < modules.length; i++) {
+      if (isUnlocked(i) && !isCompleted(i)) { next = i; break; }
+    }
+    if (next < 0) {
+      var allDone = modules.every(function (_, i) { return isCompleted(i); });
+      if (allDone) {
+        return {
+          title: 'Treinamento concluído!',
+          body: 'Você finalizou todos os módulos. Pode revisitar qualquer um quando quiser.'
+        };
+      }
+      next = progress.unlockedUpTo;
+    }
+    var m = modules[next];
+    if (next === 0 && !isCompleted(0)) {
+      return {
+        title: 'Vamos começar pelo Módulo 1?',
+        body: (m.title || '') + ' — toque no card liberado para iniciar.'
+      };
+    }
+    return {
+      title: 'Módulo ' + m.id + ' liberado!',
+      body: (m.title || '') + ' — toque no card para continuar.'
+    };
+  }
 
   var app = document.getElementById('app');
   var home = document.getElementById('home');
@@ -134,8 +260,6 @@
   var stage = document.getElementById('stage');
   var progressEl = document.getElementById('progress');
   var shell = document.getElementById('shell');
-  var extContinue = document.getElementById('extContinue');
-  var btnExtContinue = document.getElementById('btnExtContinue');
   var btnBack = document.getElementById('btnBack');
   var btnFwd = document.getElementById('btnFwd');
   var brandTxt = document.getElementById('brandTxt');
@@ -147,18 +271,22 @@
   bgMusic.src = (session.meta && session.meta.musicSrc) || 'musica/musica_foco.mp3';
   bgMusic.volume = 0.35;
 
+  var sessionWave = document.getElementById('sessionWave');
+
   function setChrome(visible) {
     if (topBar) topBar.hidden = !visible;
     if (stage) stage.hidden = !visible;
     if (home) home.hidden = visible;
+    if (sessionWave) sessionWave.hidden = !visible;
     app.classList.toggle('is-home', !visible);
   }
 
   function showHome() {
     mode = 'home';
     modIndex = -1;
+    clearAutoAdvance();
+    resetQuizState();
     if (qs) { qs.destroy(); qs = null; }
-    setExternalContinue(false);
     setChrome(false);
     transcript.classList.remove('open');
     renderProgress();
@@ -167,16 +295,6 @@
   function currentMod() { return modules[modIndex]; }
   function screens() { return currentMod() ? currentMod().screens : []; }
   function current() { return screens()[slideIndex]; }
-
-  function hasLiveVideo(s) {
-    return s && s.type === 'video' && !!(s.embed || s.panda || s.youtube || s.video);
-  }
-
-  function setExternalContinue(on) {
-    if (!extContinue) return;
-    extContinue.classList.toggle('is-on', !!on);
-    if (btnExtContinue) btnExtContinue.disabled = !canForward() && mode === 'play';
-  }
 
   function renderProgress() {
     if (mode !== 'play') {
@@ -191,6 +309,7 @@
   }
 
   function canForward() {
+    if (showingResult) return !!quizState.passed;
     var s = current();
     if (!s) return false;
     if (s.type === 'question') return !!answered[s.id];
@@ -201,31 +320,106 @@
     if (mode !== 'play') {
       btnBack.disabled = true;
       btnFwd.disabled = true;
-      setExternalContinue(false);
       return;
     }
-    /* Na 1ª tela do módulo, Voltar leva ao menu */
-    btnBack.disabled = false;
-    var atEnd = slideIndex >= screens().length - 1;
-    btnFwd.disabled = !canForward() || atEnd;
-    setExternalContinue(hasLiveVideo(current()) && canForward());
-    if (btnExtContinue) {
-      btnExtContinue.textContent = atEnd ? 'Concluir' : 'Continuar';
-      btnExtContinue.disabled = !canForward();
-    }
+    btnBack.disabled = showingResult;
+    btnFwd.disabled = !canForward();
   }
 
   function showTranscript() {
     if (mode !== 'play') {
-      transcriptBody.textContent = 'Vamos começar pelo Módulo 1? Os demais módulos ficam bloqueados por enquanto.';
+      var tip = menuCallout();
+      transcriptBody.textContent = tip.title + ' ' + tip.body;
       return;
     }
     var s = current();
     transcriptBody.textContent = (s && (s.transcript || s.explanation || s.body || s.subtitle || s.question || s.title)) || '';
   }
 
+  function showQuizResult() {
+    clearAutoAdvance();
+    showingResult = true;
+    var total = quizState.total || quizState.answered || 1;
+    var score = quizState.correct;
+    var min = quizState.minCorrect || Math.ceil(total * 0.75);
+    quizState.passed = score >= min;
+
+    if (qs) qs.destroy();
+    qs = QuestionScreen.mount(shell, {
+      type: 'quiz-result',
+      passed: quizState.passed,
+      score: score,
+      total: total,
+      minCorrect: min,
+      icon: quizState.passed ? '🏅' : '📚',
+      title: quizState.passed ? 'Desafio concluído!' : 'Desafio não concluído'
+    }, {
+      onContinue: handleContinue
+    });
+
+    renderProgress();
+    updateNav();
+    transcriptBody.textContent = quizState.passed
+      ? ('Aprovado: ' + score + ' de ' + total + '.')
+      : ('Não aprovado: ' + score + ' de ' + total + '. Mínimo: ' + min + '.');
+  }
+
+  function restartQuiz() {
+    clearAutoAdvance();
+    showingResult = false;
+    clearQuizAnswers();
+    quizState.correct = 0;
+    quizState.answered = 0;
+    quizState.passed = false;
+    quizState.active = true;
+    if (quizState.introIndex >= 0) {
+      slideIndex = quizState.introIndex;
+      mountSlide();
+    }
+  }
+
+  function finishAfterQuiz() {
+    clearAutoAdvance();
+    showingResult = false;
+    quizState.active = false;
+    var list = screens();
+    var next = slideIndex + 1;
+    while (next < list.length && list[next].type === 'question') next++;
+    if (next >= list.length) {
+      completeCurrentModule();
+      showMenu();
+      return;
+    }
+    slideIndex = next;
+    mountSlide();
+  }
+
+  function handleContinue(info) {
+    var action = info && info.action;
+    if (action === 'retry') {
+      restartQuiz();
+      return;
+    }
+    if (action === 'finish') {
+      finishAfterQuiz();
+      return;
+    }
+    advance();
+  }
+
   function advance() {
+    clearAutoAdvance();
+    if (showingResult) {
+      if (quizState.passed) finishAfterQuiz();
+      return;
+    }
+    var s = current();
+    if (s && s.type === 'question' && answered[s.id] && isLastQuizQuestion()) {
+      showQuizResult();
+      return;
+    }
     if (slideIndex >= screens().length - 1) {
+      completeCurrentModule();
       showMenu();
       return;
     }
@@ -235,30 +429,39 @@
   function showMenu() {
     mode = 'menu';
     modIndex = -1;
+    clearAutoAdvance();
+    resetQuizState();
     if (qs) { qs.destroy(); qs = null; }
     brandTxt.textContent = (session.meta && session.meta.title) || 'NR 17';
-    setExternalContinue(false);
     setChrome(true);
+    var callout = menuCallout();
     shell.innerHTML =
       '<div class="qs-menu">' +
         '<button type="button" class="qs-menu-back" id="btnMenuBack">← Voltar à capa</button>' +
         '<h1>NR 17 — Sessão Aprender</h1>' +
         '<p class="qs-menu-lead">Conteúdo programático do treinamento. As atividades ficam só no final de cada módulo.</p>' +
         '<div class="qs-start-callout" role="status">' +
-          '<strong>Vamos começar pelo Módulo 1?</strong>' +
-          '<span>Fundamentos da Ergonomia — toque no card liberado para iniciar.</span>' +
+          '<strong>' + callout.title + '</strong>' +
+          '<span>' + callout.body + '</span>' +
         '</div>' +
         '<div class="qs-mod-grid">' +
           modules.map(function (m, i) {
-            var locked = i > 0;
-            return '<button type="button" class="qs-mod-card' + (locked ? ' is-locked' : ' is-open') + '"' +
+            var locked = !isUnlocked(i);
+            var done = isCompleted(i);
+            var cls = locked ? ' is-locked' : (done ? ' is-done' : ' is-open is-pulse');
+            var statusLabel = locked ? 'Bloqueado' : (done ? 'Concluído' : (i === 0 ? 'Começar' : 'Continuar'));
+            var statusCls = locked ? 'qs-lock' : (done ? 'qs-done' : 'qs-go');
+            var meta = locked
+              ? ('Conclua o Módulo ' + modules[i - 1].id + ' para liberar')
+              : (done ? 'Toque para revisar' : (m.meta || 'Disponível agora'));
+            return '<button type="button" class="qs-mod-card' + cls + '"' +
               ' data-mod="' + i + '"' +
               (locked ? ' disabled aria-disabled="true"' : '') +
               '>' +
               '<div class="qs-mod-num">' + m.id + '</div>' +
-              '<strong>' + m.title + '</strong>' +
-              '<span>' + (locked ? 'Em breve — avance pelo Módulo 1' : (m.meta || 'Disponível agora')) + '</span>' +
-              (locked ? '<em class="qs-lock">Bloqueado</em>' : '<em class="qs-go">Começar</em>') +
+              '<strong class="qs-mod-title">' + m.title + '</strong>' +
+              '<span class="qs-mod-meta">' + meta + '</span>' +
+              '<em class="' + statusCls + '">' + statusLabel + '</em>' +
             '</button>';
           }).join('') +
         '</div>' +
@@ -271,7 +474,9 @@
   }
 
   function openModule(i) {
-    if (i > 0) return;
+    if (!isUnlocked(i)) return;
+    clearAutoAdvance();
+    resetQuizState();
     setChrome(true);
     modIndex = i;
     slideIndex = 0;
@@ -284,17 +489,39 @@
   function mountSlide() {
     var s = current();
     if (!s) return;
+    clearAutoAdvance();
+    showingResult = false;
     var payload = Object.assign({}, s);
+
+    if (s.type === 'quiz-intro') {
+      var total = s.count != null ? Number(s.count) : countQuizQuestionsFrom(slideIndex);
+      quizState = {
+        active: true,
+        correct: 0,
+        answered: 0,
+        minCorrect: s.minCorrect != null ? Number(s.minCorrect) : Math.ceil(total * 0.75),
+        total: total,
+        introIndex: slideIndex,
+        passed: false
+      };
+    }
 
     if (qs) qs.destroy();
     qs = QuestionScreen.mount(shell, payload, {
-      onSelect: function () {
+      onSelect: function (result) {
         answered[s.id] = true;
+        if (quizState.active && s.type === 'question' && !s.opinion) {
+          quizState.answered += 1;
+          if (result && result.correct) quizState.correct += 1;
+        }
         updateNav();
+        clearAutoAdvance();
+        autoAdvanceTimer = setTimeout(function () {
+          if (isLastQuizQuestion()) showQuizResult();
+          else go(1);
+        }, 3000);
       },
-      onContinue: function () {
-        advance();
-      }
+      onContinue: handleContinue
     });
 
     if (s.type !== 'question') answered[s.id] = true;
@@ -305,9 +532,21 @@
 
   function go(delta) {
     if (mode !== 'play') return;
+    clearAutoAdvance();
+    if (showingResult) {
+      if (delta > 0 && quizState.passed) finishAfterQuiz();
+      return;
+    }
     if (delta < 0 && slideIndex <= 0) {
       showMenu();
       return;
+    }
+    if (delta > 0) {
+      var s = current();
+      if (s && s.type === 'question' && answered[s.id] && isLastQuizQuestion()) {
+        showQuizResult();
+        return;
+      }
     }
     var next = slideIndex + delta;
     if (next < 0 || next >= screens().length) return;
@@ -342,13 +581,7 @@
   });
 
   btnBack.addEventListener('click', function () { go(-1); });
-  btnFwd.addEventListener('click', function () { go(1); });
-  if (btnExtContinue) {
-    btnExtContinue.addEventListener('click', function () {
-      if (!canForward()) return;
-      advance();
-    });
-  }
+  btnFwd.addEventListener('click', function () { advance(); });
   document.getElementById('btnHome').addEventListener('click', function () {
     if (mode === 'play') showMenu();
     else showHome();
@@ -382,7 +615,7 @@
   });
 
   document.getElementById('btnMode').addEventListener('click', function () {
-    alert('Modo Aprender\n\n• Conteúdo dentro do cartão\n• Atividades só no final de cada módulo\n• Use Continuar ou as setas para navegar');
+    alert('Modo Aprender\n\n• Conteúdo dentro do cartão\n• Atividades só no final de cada módulo\n• Use as setas para navegar');
   });
 
   document.addEventListener('keydown', function (e) {
@@ -394,7 +627,7 @@
       if (e.key === 'Enter') showMenu();
       return;
     }
-    if (e.key === 'ArrowRight') go(1);
+    if (e.key === 'ArrowRight') advance();
     if (e.key === 'ArrowLeft') go(-1);
     if (e.key === 'Escape') {
       if (mode === 'play') showMenu();

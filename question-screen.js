@@ -6,6 +6,8 @@
  *  - content:  { type, kicker?, title, body?, bullets?, image? }
  *  - video:    { type, title, kicker?, duration?, scene?, brief?, video?, youtube?, image?/poster? }
  *  - image:    { type, title, kicker?, body?, bullets?, image, imageFit? }
+ *  - quiz-intro: { type, title, body?, count?, minCorrect?, image? }
+ *  - quiz-result: { type, passed, score, total, minCorrect, title? }
  *  - question: { type, question, alternatives[2..4], explanation?, image?, opinion? }
  *
  * video: se tiver `video` (mp4) ou `youtube` (id/url), toca o player;
@@ -72,33 +74,14 @@
           <p>${esc(data.brief || data.body || '')}</p>
         </div>`;
 
-    var hasLive = !!live;
-    if (hasLive) {
-      return `
-      <article class="qs-screen is-video has-player" data-qs-root data-type="video" data-external-continue="1">
+    return `
+      <article class="qs-screen is-video has-player" data-qs-root data-type="video">
         <header class="qs-video-head">
           <span class="qs-video-pill">${esc(data.kicker || '🎥 Vídeo')}</span>
           <h2 class="qs-video-title">${esc(data.title || '')}</h2>
         </header>
         <div class="qs-media qs-media-video">
           ${stage}
-        </div>
-      </article>`;
-    }
-
-    return `
-      <article class="qs-screen is-video" data-qs-root data-type="video">
-        <div class="qs-media qs-media-video">
-          ${stage}
-        </div>
-        <div class="qs-panel qs-panel-tight">
-          ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : '<div class="qs-kicker">🎥 Vídeo</div>'}
-          <h2 class="qs-title">${esc(data.title || '')}</h2>
-        </div>
-        <div class="qs-foot">
-          <div class="qs-actions">
-            <button type="button" class="qs-btn" data-qs-continue>Continuar</button>
-          </div>
         </div>
       </article>`;
   }
@@ -111,20 +94,15 @@
       : '';
     var body = data.body ? `<p class="qs-body">${esc(data.body)}</p>` : '';
     return `
-      <article class="qs-screen is-image" data-qs-root data-type="image">
-        <div class="qs-media qs-media-lg">
+      <article class="qs-screen is-image has-split" data-qs-root data-type="image">
+        <div class="qs-media qs-media-split">
           ${mediaHTML(data, { contain: true })}
         </div>
-        <div class="qs-panel qs-panel-tight">
+        <div class="qs-panel qs-panel-split">
           ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
           <h2 class="qs-title">${esc(data.title || '')}</h2>
           ${body}
           ${bullets}
-        </div>
-        <div class="qs-foot">
-          <div class="qs-actions">
-            <button type="button" class="qs-btn" data-qs-continue>Continuar</button>
-          </div>
         </div>
       </article>`;
   }
@@ -139,11 +117,6 @@
             ${data.subtitle ? `<p>${esc(data.subtitle)}</p>` : ''}
           </div>
         </div>
-        <div class="qs-foot qs-foot-cover">
-          <div class="qs-actions">
-            <button type="button" class="qs-btn" data-qs-continue>Continuar</button>
-          </div>
-        </div>
       </article>`;
   }
 
@@ -156,20 +129,58 @@
     var body = data.body ? `<p class="qs-body">${esc(data.body)}</p>` : '';
     var hasImg = !!data.image;
     return `
-      <article class="qs-screen is-content" data-qs-root data-type="content">
-        <div class="qs-media ${hasImg ? 'qs-media-md' : 'qs-media-sm'}">
+      <article class="qs-screen is-content${hasImg ? ' has-split' : ''}" data-qs-root data-type="content">
+        <div class="qs-media ${hasImg ? 'qs-media-split' : 'qs-media-sm'}">
           ${mediaHTML(data)}
         </div>
-        <div class="qs-panel">
+        <div class="qs-panel${hasImg ? ' qs-panel-split' : ''}">
           ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
           <h2 class="qs-title">${esc(data.title || '')}</h2>
           ${body}
           ${bullets}
         </div>
-        <div class="qs-foot">
-          <div class="qs-actions">
-            <button type="button" class="qs-btn" data-qs-continue>Continuar</button>
-          </div>
+      </article>`;
+  }
+
+  function quizIntroHTML(data) {
+    var count = data.count != null ? Number(data.count) : null;
+    var min = data.minCorrect != null ? Number(data.minCorrect) : null;
+    var desc = data.body || '';
+    if (!desc && count) {
+      desc = 'Responda <strong>' + count + '</strong> perguntas de múltipla escolha.';
+      if (min) desc += ' Você precisa acertar no mínimo <strong>' + min + '</strong> para avançar.';
+    }
+    return `
+      <article class="qs-screen is-quiz-intro" data-qs-root data-type="quiz-intro">
+        <div class="qs-quiz-intro">
+          <div class="qs-quiz-intro-icon" aria-hidden="true">${esc(data.icon || '🎮')}</div>
+          <h2 class="qs-quiz-intro-title">${esc(data.title || 'Desafio do módulo')}</h2>
+          <p class="qs-quiz-intro-desc">${desc}</p>
+          <button type="button" class="qs-quiz-intro-btn" data-qs-start>Iniciar desafio</button>
+        </div>
+      </article>`;
+  }
+
+  function quizResultHTML(data) {
+    var passed = !!data.passed;
+    var score = data.score != null ? data.score : 0;
+    var total = data.total != null ? data.total : 0;
+    var min = data.minCorrect != null ? data.minCorrect : 0;
+    var title = data.title || (passed ? 'Desafio concluído!' : 'Desafio não concluído');
+    var desc = data.body || (passed
+      ? ('Você acertou <strong>' + score + '</strong> de <strong>' + total + '</strong> questões. Parabéns! Pode avançar.')
+      : ('Você acertou <strong>' + score + '</strong> de <strong>' + total + '</strong>. É necessário acertar pelo menos <strong>' + min + '</strong>. Estude e tente novamente.'));
+    var actions = passed
+      ? `<button type="button" class="qs-quiz-intro-btn" data-qs-finish>Continuar</button>`
+      : `<button type="button" class="qs-quiz-intro-btn" data-qs-retry>Jogar novamente</button>`;
+    return `
+      <article class="qs-screen is-quiz-result" data-qs-root data-type="quiz-result">
+        <div class="qs-quiz-result ${passed ? 'is-pass' : 'is-fail'}">
+          <div class="qs-quiz-result-icon" aria-hidden="true">${esc(data.icon || (passed ? '🏅' : '📚'))}</div>
+          <h2 class="qs-quiz-result-title">${esc(title)}</h2>
+          <div class="qs-quiz-result-score">${score}/${total}</div>
+          <p class="qs-quiz-result-desc">${desc}</p>
+          <div class="qs-quiz-result-actions">${actions}</div>
         </div>
       </article>`;
   }
@@ -187,8 +198,8 @@
     }).join('');
 
     return `
-      <article class="qs-screen" data-qs-root data-type="question">
-        <div class="qs-media qs-media-sm">
+      <article class="qs-screen is-question" data-qs-root data-type="question">
+        <div class="qs-media qs-media-hero">
           ${mediaHTML(data)}
           <div class="qs-ribbon" data-qs-ribbon role="status" aria-live="polite">
             <span class="qs-badge" data-qs-ribbon-icon></span>
@@ -201,11 +212,8 @@
         <div class="qs-opts count-${count}" data-qs-opts>
           ${opts}
         </div>
-        <div class="qs-foot">
+        <div class="qs-foot qs-foot-quiz">
           <div class="qs-explain" data-qs-explain></div>
-          <div class="qs-actions">
-            <button type="button" class="qs-btn" data-qs-continue disabled>Continuar</button>
-          </div>
         </div>
       </article>`;
   }
@@ -235,6 +243,8 @@
     else if (type === 'content') html = contentHTML(this.data);
     else if (type === 'video') html = videoHTML(this.data);
     else if (type === 'image') html = imageHTML(this.data);
+    else if (type === 'quiz-intro') html = quizIntroHTML(this.data);
+    else if (type === 'quiz-result') html = quizResultHTML(this.data);
 
     this.el.innerHTML = html;
     this.root = this.el.querySelector('[data-qs-root]');
@@ -324,17 +334,18 @@
 
   QuestionScreen.prototype._onClick = function (e) {
     var opt = e.target.closest('.qs-opt');
-    var cont = e.target.closest('[data-qs-continue]');
+    var start = e.target.closest('[data-qs-start]');
+    var retry = e.target.closest('[data-qs-retry]');
+    var finish = e.target.closest('[data-qs-finish]');
     if (opt && !this.state.answered) {
       this.select(+opt.dataset.index);
       return;
     }
-    if (cont && !cont.disabled) {
+    if (start || retry || finish) {
       if (typeof this.options.onContinue === 'function') {
         this.options.onContinue({
-          correct: this.state.correct,
-          selectedIndex: this.state.selectedIndex,
-          data: this.data
+          data: this.data,
+          action: start ? 'start' : (retry ? 'retry' : 'finish')
         });
       }
     }
@@ -378,13 +389,18 @@
       }
     });
 
+    var media = this.el.querySelector('.qs-media');
+    if (media) media.classList.add('is-answered');
+
     var ribbon = this.el.querySelector('[data-qs-ribbon]');
     if (ribbon) {
+      ribbon.classList.remove('show', 'ok', 'nok');
+      void ribbon.offsetWidth;
       ribbon.classList.add('show', isCorrect ? 'ok' : 'nok');
       var icon = ribbon.querySelector('[data-qs-ribbon-icon]');
       var text = ribbon.querySelector('[data-qs-ribbon-text]');
       if (icon) icon.textContent = isCorrect ? '✓' : '✕';
-      if (text) text.textContent = opinion ? 'Registrado' : (isCorrect ? 'Correto' : 'Incorreto');
+      if (text) text.textContent = opinion ? 'Registrado' : (isCorrect ? 'Correto!' : 'Incorreto');
     }
 
     var explain = this.el.querySelector('[data-qs-explain]');
@@ -392,9 +408,6 @@
       explain.textContent = this.data.explanation;
       explain.classList.add('show', isCorrect ? 'is-ok' : 'is-nok');
     }
-
-    var btn = this.el.querySelector('[data-qs-continue]');
-    if (btn) btn.disabled = false;
 
     if (typeof this.options.onSelect === 'function') {
       this.options.onSelect({

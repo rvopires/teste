@@ -1,7 +1,7 @@
 /**
  * Conteúdo da Sessão Aprender — NR 17
- * Tipos: cover | content | video | image | question
- * Atividades (question) só no FINAL de cada módulo.
+ * Tipos: cover | content | video | image | quiz-intro | question
+ * Atividades (question) só no FINAL de cada módulo — precedidas por quiz-intro.
  *
  * video: use `video` (mp4) ou `youtube` quando o arquivo existir;
  *        senão aparece o placeholder "Vídeo a gravar".
@@ -81,6 +81,15 @@ window.QUESTION_SCREEN_SESSION = {
           ],
           image: "assets/fotos/question-screen/cover.png",
           transcript: "Três áreas: física, organizacional e cognitiva."
+        },
+        {
+          id: "m1-quiz-intro",
+          type: "quiz-intro",
+          title: "Desafio NR 17 — Módulo 1",
+          count: 4,
+          minCorrect: 3,
+          icon: "🎮",
+          transcript: "Desafio final do módulo 1: 4 perguntas."
         },
         {
           id: "m1-q1",
@@ -228,6 +237,15 @@ window.QUESTION_SCREEN_SESSION = {
           transcript: "Foto: equipamentos de apoio da loja."
         },
         {
+          id: "m2-quiz-intro",
+          type: "quiz-intro",
+          title: "Desafio NR 17 — Módulo 2",
+          count: 4,
+          minCorrect: 3,
+          icon: "🎮",
+          transcript: "Desafio final do módulo 2: 4 cenários."
+        },
+        {
           id: "m2-q1",
           type: "question",
           question: "Colaborador levanta sozinho 18 kg, com a pega próxima ao corpo. Liberar?",
@@ -333,6 +351,15 @@ window.QUESTION_SCREEN_SESSION = {
           scene: "Cena a filmar em três setores da loja",
           brief: "Três riscos: movimento repetitivo (caixa), vibração (paleteira motorizada) e postura forçada (torcer o tronco por item mal posicionado).",
           transcript: "Vídeo: riscos biomecânicos — repetição, vibração e postura forçada."
+        },
+        {
+          id: "m3-quiz-intro",
+          type: "quiz-intro",
+          title: "Desafio NR 17 — Módulo 3",
+          count: 5,
+          minCorrect: 4,
+          icon: "🎮",
+          transcript: "Desafio final do módulo 3: 5 perguntas."
         },
         {
           id: "m3-q1",
@@ -454,6 +481,15 @@ window.QUESTION_SCREEN_SESSION = {
           transcript: "Cinco dicas rápidas do posto administrativo."
         },
         {
+          id: "m4-quiz-intro",
+          type: "quiz-intro",
+          title: "Desafio NR 17 — Módulo 4",
+          count: 3,
+          minCorrect: 2,
+          icon: "🎮",
+          transcript: "Desafio final do módulo 4: 3 perguntas."
+        },
+        {
           id: "m4-q1",
           type: "question",
           question: "Como o monitor deve ficar em relação à janela?",
@@ -567,6 +603,15 @@ window.QUESTION_SCREEN_SESSION = {
           scene: "Cena a filmar com o instrutor, encerrando o treinamento",
           brief: "Instrutor em corredor da loja transmite a mensagem final. Má postura gera dor e pode evoluir para LER/DORT. Pratique os alongamentos e mantenha a postura neutra.",
           transcript: "Vídeo final: efeitos da má postura."
+        },
+        {
+          id: "m5-quiz-intro",
+          type: "quiz-intro",
+          title: "Desafio NR 17 — Módulo 5",
+          count: 4,
+          minCorrect: 3,
+          icon: "🎮",
+          transcript: "Desafio final do módulo 5: 4 perguntas."
         },
         {
           id: "m5-q1",
