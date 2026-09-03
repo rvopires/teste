@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NR 17 — Sessão relâmpago · Ergonomia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --floor:#0e1a16;
+    --floor-2:#163028;
+    --ink:#102018;
+    --paper:#f4f7f4;
+    --mute:#5d7268;
+    --tape:#e8c547;
+    --tape-dk:#c9a21a;
+    --go:#3a9a4a;
+    --go-dk:#2a6f36;
+    --stop:#c23b3b;
+    --a:#1b6b4a;
+    --b:#c45c26;
+    --c:#2c5f7c;
+    --d:#9a6b12;
+    --safe: env(safe-area-inset-bottom, 0px);
+    --safe-t: env(safe-area-inset-top, 0px);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    min-height:100dvh;
+    font-family:Manrope,system-ui,sans-serif;
+    background:
+      repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(232,197,71,.06) 18px, rgba(232,197,71,.06) 20px),
+      radial-gradient(1200px 600px at 80% -10%, #1f4a38, transparent 55%),
+      linear-gradient(165deg, var(--floor), var(--floor-2) 55%, #0b1411);
+    color:var(--paper);
+    overflow:hidden;
+  }
+  #app{
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    padding-top:var(--safe-t);
+  }
+  .screen{display:none;flex:1;min-height:0;flex-direction:column;}
+  .screen.on{display:flex;}
+
+  .hazard{
+    height:10px;flex:0 0 auto;
+    background:repeating-linear-gradient(90deg,#111 0 14px,var(--tape) 14px 28px);
+  }
+  .hazard .fill{
+    height:100%;width:0;
+    background:rgba(255,255,255,.45);
+    mix-blend-mode:overlay;
+    transition:width .2s linear;
+  }
+
+  h1,h2,.anton{font-family:Anton,sans-serif;font-weight:400;letter-spacing:.02em;margin:0;}
+
+  /* Lobby */
+  #lobby{
+    align-items:center;justify-content:center;text-align:center;
+    padding:24px 20px calc(28px + var(--safe));
+    gap:18px;
+  }
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;
+    border:1px solid rgba(232,197,71,.45);
+    color:var(--tape);font-weight:800;font-size:.78rem;
+    letter-spacing:.14em;text-transform:uppercase;
+    padding:6px 12px;border-radius:999px;
+  }
+  .badge i{width:8px;height:8px;border-radius:1px;background:var(--tape);}
+  #lobby h1{font-size:clamp(2.4rem,8vw,4.4rem);line-height:.9;max-width:16ch;}
+  #lobby h1 span{color:var(--tape);}
+  #lobby p{margin:0;max-width:38ch;color:#c5d4cc;line-height:1.5;font-weight:600;}
+  .card{
+    width:min(420px,100%);
+    background:var(--paper);color:var(--ink);
+    border-radius:20px;padding:22px;
+    box-shadow:0 24px 50px rgba(0,0,0,.35);
+    text-align:left;display:flex;flex-direction:column;gap:12px;
+  }
+  .card label{font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);}
+  .card input{
+    width:100%;border:2px solid #d5e0d8;border-radius:12px;
+    padding:14px 16px;font:700 1.05rem Manrope,sans-serif;color:var(--ink);
+    outline:none;
+  }
+  .card input:focus{border-color:var(--a);}
+  .go{
+    border:0;cursor:pointer;width:100%;
+    background:var(--go);color:#fff;
+    font:800 1.05rem Manrope,sans-serif;
+    padding:15px 18px;border-radius:12px;
+    box-shadow:0 5px 0 var(--go-dk);
+  }
+  .go:active{transform:translateY(3px);box-shadow:0 2px 0 var(--go-dk);}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;color:#9fb3aa;font-size:.8rem;font-weight:700;}
+  .meta b{color:var(--tape);font-weight:800;}
+
+  /* Countdown */
+  #count{align-items:center;justify-content:center;gap:8px;}
+  #count .n{
+    font-family:Anton,sans-serif;font-size:clamp(6rem,28vw,11rem);
+    color:var(--tape);line-height:.85;
+    text-shadow:0 10px 40px rgba(0,0,0,.4);
+    animation:pop .45s ease;
+  }
+  @keyframes pop{from{transform:scale(.4);opacity:0;}60%{transform:scale(1.12);}to{transform:scale(1);}}
+  #count small{letter-spacing:.2em;text-transform:uppercase;font-weight:800;opacity:.7;}
+
+  /* Play chrome */
+  .top{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 16px 4px;
+  }
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:.92rem;}
+  .brand .mark{
+    width:22px;height:22px;border-radius:4px;
+    background:conic-gradient(from 45deg,var(--tape) 0 25%,#111 0 50%,var(--tape) 0 75%,#111 0);
+  }
+  .chip{
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+    padding:6px 12px;border-radius:999px;font-weight:800;font-size:.8rem;
+  }
+  .stage{
+    flex:1;min-height:0;display:flex;flex-direction:column;
+    width:min(980px,100%);margin:0 auto;padding:8px 16px 16px;
+  }
+
+  .qbox{
+    background:var(--paper);color:var(--ink);
+    border-radius:18px;padding:22px 22px 20px;
+    box-shadow:0 18px 40px rgba(0,0,0,.28);
+    flex:0 0 auto;
+  }
+  .qbox .kicker{
+    font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);
+    margin-bottom:8px;
+  }
+  .qbox h2{font-size:clamp(1.35rem,3.4vw,2.15rem);line-height:1.12;margin:0;}
+  .qbox p{margin:10px 0 0;color:#3c5248;font-weight:600;line-height:1.5;}
+  .qbox .bul{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px;}
+  .qbox .bul li{
+    background:#eef3ef;border-radius:10px;padding:10px 12px;
+    font-weight:700;font-size:.95rem;
+  }
+
+  .answers{
+    margin-top:14px;flex:1;min-height:0;
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;
+    align-content:stretch;
+  }
+  .ans{
+    border:0;cursor:pointer;color:#fff;text-align:left;
+    border-radius:16px;padding:16px 16px 16px 14px;
+    font:800 1.02rem/1.25 Manrope,sans-serif;
+    display:flex;align-items:center;gap:12px;
+    min-height:88px;
+    box-shadow:inset 0 -6px 0 rgba(0,0,0,.18);
+    transition:transform .12s ease, filter .12s ease, opacity .2s ease;
+  }
+  .ans:active{transform:translateY(3px);box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);}
+  .ans .tag{
+    flex:0 0 auto;width:36px;height:36px;border-radius:10px;
+    background:rgba(0,0,0,.18);display:grid;place-items:center;
+    font-family:Anton,sans-serif;font-size:1.15rem;
+  }
+  .ans[data-c="0"]{background:var(--a);}
+  .ans[data-c="1"]{background:var(--b);}
+  .ans[data-c="2"]{background:var(--c);}
+  .ans[data-c="3"]{background:var(--d);}
+  .ans.dim{opacity:.28;filter:grayscale(.4);}
+  .ans.ok{outline:4px solid #fff;box-shadow:0 0 0 6px rgba(58,154,74,.55);}
+  .ans.bad{outline:4px solid rgba(0,0,0,.35);}
+
+  .tf .answers{grid-template-columns:1fr 1fr;}
+  .tf .ans{min-height:110px;justify-content:center;font-size:1.2rem;}
+
+  .scale{
+    margin-top:18px;display:flex;gap:8px;justify-content:space-between;
+  }
+  .scale button{
+    flex:1;aspect-ratio:1;max-height:72px;
+    border:0;border-radius:14px;cursor:pointer;
+    background:rgba(255,255,255,.12);color:#fff;
+    font:800 1.2rem Manrope,sans-serif;
+  }
+  .scale button:hover{background:rgba(232,197,71,.35);}
+  .scale-labels{display:flex;justify-content:space-between;margin-top:8px;color:#c5d4cc;font-size:.75rem;font-weight:700;}
+
+  .cloud{
+    margin-top:16px;display:flex;flex-direction:column;gap:10px;
+  }
+  .cloud input{
+    width:100%;border:0;border-radius:14px;padding:16px 18px;
+    font:700 1.05rem Manrope,sans-serif;outline:none;
+  }
+  .pills{display:flex;flex-wrap:wrap;gap:8px;min-height:28px;}
+  .pills span{
+    background:rgba(232,197,71,.18);color:var(--tape);
+    border:1px solid rgba(232,197,71,.4);
+    padding:6px 12px;border-radius:999px;font-weight:800;font-size:.85rem;
+  }
+
+  .nextbar{
+    margin-top:14px;display:flex;justify-content:flex-end;
+  }
+  .next{
+    border:0;cursor:pointer;
+    background:var(--tape);color:#111;
+    font:800 1rem Manrope,sans-serif;
+    padding:14px 22px;border-radius:12px;
+  }
+
+  /* Reveal overlay */
+  #reveal{
+    position:absolute;inset:auto 0 0 0;
+    padding:18px 16px calc(18px + var(--safe));
+    display:none;align-items:center;justify-content:center;gap:14px;
+    background:rgba(14,26,22,.92);backdrop-filter:blur(8px);
+  }
+  #reveal.show{display:flex;}
+  #reveal .face{
+    width:64px;height:64px;border-radius:18px;
+    display:grid;place-items:center;font-size:2rem;background:#fff;
+  }
+  #reveal h3{margin:0;font-size:1.6rem;}
+  #reveal p{margin:2px 0 0;color:#c5d4cc;font-weight:700;}
+
+  /* End */
+  #end{align-items:center;justify-content:center;padding:24px 16px calc(24px + var(--safe));text-align:center;gap:16px;}
+  .podium{
+    width:min(420px,100%);background:var(--paper);color:var(--ink);
+    border-radius:22px;padding:28px 22px;box-shadow:0 24px 50px rgba(0,0,0,.35);
+  }
+  .podium .score{font-family:Anton,sans-serif;font-size:4rem;color:var(--a);line-height:1;}
+  .podium h2{font-size:1.8rem;margin:6px 0 4px;}
+  .stats{display:flex;justify-content:center;gap:18px;margin-top:12px;font-weight:800;color:var(--mute);}
+
+  @media (max-width:720px){
+    .answers{grid-template-columns:1fr;gap:10px;}
+    .ans{min-height:68px;padding:12px 14px;}
+    .tf .answers{grid-template-columns:1fr 1fr;}
+    .qbox{padding:18px 16px;}
+    .stage{padding:6px 12px 12px;}
+  }
+  @media (min-width:721px){
+    .answers{min-height:220px;}
+    .ans{font-size:1.08rem;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hazard" aria-hidden="true"><div class="fill" id="bar"></div></div>
+
+  <section class="screen on" id="lobby">
+    <div class="badge"><i></i> Sessão relâmpago · NR 17</div>
+    <h1>Ergonomia no <span>chão de loja</span></h1>
+    <p>Mesmo ritmo de um quiz solo: telas curtas, tempo na pergunta e pontos por rapidez. Conteúdo do treinamento de comércio e logística.</p>
+    <form class="card" onsubmit="start(event)">
+      <label for="nick">Seu apelido na sessão</label>
+      <input id="nick" maxlength="18" autocomplete="nickname" placeholder="Ex.: equipe loja 12" />
+      <button class="go" type="submit">Começar</button>
+    </form>
+    <div class="meta"><span><b id="nTelas">—</b> telas</span><span>·</span><span>celular e desktop</span><span>·</span><span>sem conta</span></div>
+  </section>
+
+  <section class="screen" id="count">
+    <div class="n" id="cd">3</div>
+    <small>Prepare a postura</small>
+  </section>
+
+  <section class="screen" id="play" style="position:relative;">
+    <div class="top">
+      <div class="brand"><span class="mark"></span> NR 17</div>
+      <div class="chip" id="pos">1 / 12</div>
+      <div class="chip" id="pts">0 pts</div>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div id="reveal">
+      <div class="face" id="rface">✓</div>
+      <div>
+        <h3 class="anton" id="rtitle">Correto</h3>
+        <p id="rsub">+0</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="end">
+    <div class="podium">
+      <div class="score" id="endScore">0</div>
+      <h2 id="endTitle">Sessão concluída</h2>
+      <p id="endSub" style="margin:0;color:#3c5248;font-weight:700;"></p>
+      <div class="stats">
+        <span id="endHits"></span>
+        <span id="endStreak"></span>
+      </div>
+    </div>
+    <button class="go" style="width:min(420px,100%)" type="button" onclick="location.reload()">Jogar de novo</button>
+  </section>
+</div>
+
+<script>
+const STEPS = [
+  { type:"content", kicker:"Abertura", title:"NR 17 cuida de quem faz o trabalho", body:"Ergonomia vem do grego ergon (trabalho) e nomos (regra). A norma pede que o posto, a carga e o ritmo se adaptem à pessoa — não o contrário." },
+  { type:"scale", kicker:"Termômetro", title:"Hoje, o quanto sua postura no turno te preocupa?", low:"Pouco", high:"Muito" },
+  { type:"quiz", kicker:"Fundamentos", time:15, q:"A NR 17 trata principalmente de:", opts:["Segurança em máquinas","Ergonomia","Combate a incêndio","Trabalho em altura"], a:1 },
+  { type:"content", kicker:"Três frentes", title:"Física, organizacional e cognitiva", bullets:["Física: postura, carga, repetição.","Organizacional: pausas, ritmo, rodízio.","Cognitiva: atenção, decisão, informação no posto."] },
+  { type:"quiz", kicker:"Fundamentos", time:12, q:"Qual opção NÃO é uma das três áreas da ergonomia?", opts:["Física","Organizacional","Cognitiva","Financeira"], a:3 },
+  { type:"cloud", kicker:"Chão de loja", title:"Qual movimento do seu turno mais cansa o corpo?", hint:"Uma palavra: paleteira, prateleira, caixa…" },
+  { type:"content", kicker:"Carga", title:"Três números para memorizar", bullets:["Pega no máximo a 60 cm do corpo.","Acima de 25 kg: duas pessoas ou equipamento.","Pausa na movimentação a cada 2 horas."] },
+  { type:"quiz", kicker:"Cargas", time:15, q:"Qual postura reduz a sobrecarga na coluna ao levantar do chão?", opts:["Curvar só a coluna","Flexionar os joelhos e manter a coluna reta","Girar o tronco enquanto levanta","Levantar com um braço só"], a:1 },
+  { type:"quiz", kicker:"Cargas", time:12, q:"Uma caixa de 30 kg vai do estoque ao checkout. Liberar transporte sozinho?", opts:["Sim, sem problema","Não: acima de 25 kg pede ajuda ou equipamento","Só se for rápido","Sim, com luvas basta"], a:1 },
+  { type:"tf", kicker:"Postura", time:12, q:"Uma postura mantida por mais de 4 segundos já é considerada postura estática.", a:true },
+  { type:"tf", kicker:"Postura", time:12, q:"Agachar ou ajoelhar por longo tempo não é problema se a pessoa se sentir confortável.", a:false },
+  { type:"quiz", kicker:"Administrativo", time:12, q:"Como o monitor deve ficar em relação à janela?", opts:["De frente para a janela","De costas para a janela","Paralelo à janela lateral","Tanto faz"], a:2 },
+  { type:"quiz", kicker:"Pausas visuais", time:10, q:"Nas pausas visuais, para onde olhar?", opts:["Para o celular","Para um ponto a mais de 6 metros","Para o teto","Para a própria tela"], a:1 },
+  { type:"quiz", kicker:"Conforto térmico", time:10, q:"Faixa de temperatura de conforto no posto administrativo:", opts:["10°C a 15°C","18°C a 25°C","26°C a 30°C","Não há faixa"], a:1 },
+  { type:"quiz", kicker:"Ginástica laboral", time:12, q:"Qual exercício alonga principalmente o pescoço?", opts:["Cotovelo atrás da cabeça","Entrelaçar os dedos e ondular","Movimento de “sim” e “não” com a cabeça","Braços atrás do corpo"], a:2 },
+  { type:"content", kicker:"Fechamento", title:"Pequeno ajuste, menos afastamento", body:"Cuidar da coluna, das pausas e do posto hoje evita LER/DORT amanhã. Aplique no próximo turno: joelhos, carga perto do corpo, variação de postura." }
+];
+
+document.getElementById("nTelas").textContent = STEPS.length;
+
+const MAX = 1000, MIN = 400;
+let i = 0, score = 0, hits = 0, streak = 0, best = 0, nick = "Equipe";
+let tLeft = 0, tTot = 10, ticking = null, locked = false, quizCount = 0;
+
+const $ = id => document.getElementById(id);
+function show(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("on"));
+  $(id).classList.add("on");
+}
+
+function start(e){
+  e.preventDefault();
+  nick = $("nick").value.trim() || "Equipe";
+  i = 0; score = 0; hits = 0; streak = 0; best = 0;
+  quizCount = STEPS.filter(s => s.type === "quiz" || s.type === "tf").length;
+  runCount();
+}
+
+function runCount(){
+  show("count");
+  let n = 3;
+  $("cd").textContent = n;
+  const id = setInterval(() => {
+    n--;
+    if(n <= 0){ clearInterval(id); render(); return; }
+    $("cd").textContent = n;
+    $("cd").style.animation = "none";
+    void $("cd").offsetWidth;
+    $("cd").style.animation = "pop .45s ease";
+  }, 650);
+}
+
+function stopTimer(){ if(ticking){ clearInterval(ticking); ticking = null; } }
+
+function render(){
+  stopTimer();
+  locked = false;
+  $("reveal").classList.remove("show");
+  if(i >= STEPS.length){ finish(); return; }
+  show("play");
+  $("pos").textContent = `${i+1} / ${STEPS.length}`;
+  $("pts").textContent = `${score} pts`;
+  $("bar").style.width = `${(i / STEPS.length) * 100}%`;
+  const s = STEPS[i];
+  const stage = $("stage");
+  stage.className = "stage" + (s.type === "tf" ? " tf" : "");
+  if(s.type === "content") stage.innerHTML = contentHTML(s);
+  else if(s.type === "quiz") stage.innerHTML = quizHTML(s);
+  else if(s.type === "tf") stage.innerHTML = tfHTML(s);
+  else if(s.type === "scale") stage.innerHTML = scaleHTML(s);
+  else if(s.type === "cloud") stage.innerHTML = cloudHTML(s);
+
+  if(s.type === "quiz" || s.type === "tf") startClock(s.time || 12);
+  else $("bar").style.width = `${((i+.4) / STEPS.length) * 100}%`;
+
+  bind(s);
+}
+
+function contentHTML(s){
+  const bullets = s.bullets ? `<ul class="bul">${s.bullets.map(b=>`<li>${b}</li>`).join("")}</ul>` : "";
+  const body = s.body ? `<p>${s.body}</p>` : "";
+  return `<div class="qbox"><div class="kicker">${s.kicker}</div><h2>${s.title}</h2>${body}${bullets}</div>
+    <div class="nextbar"><button class="next" type="button" id="btnNext">Continuar</button></div>`;
+}
+function quizHTML(s){
+  return `<div class="qbox"><div class="kicker">${s.kicker} · ${s.time}s</div><h2>${s.q}</h2></div>
+    <div class="answers" id="opts">${s.opts.map((o,n)=>`
+      <button class="ans" data-c="${n}" data-i="${n}" type="button"><span class="tag">${n+1}</span><span>${o}</span></button>
+    `).join("")}</div>`;
+}
+function tfHTML(s){
+  return `<div class="qbox"><div class="kicker">${s.kicker} · ${s.time}s</div><h2>${s.q}</h2></div>
+    <div class="answers">
+      <button class="ans" data-c="0" data-v="true" type="button"><span class="tag">V</span><span>Verdadeiro</span></button>
+      <button class="ans" data-c="1" data-v="false" type="button"><span class="tag">F</span><span>Falso</span></button>
+    </div>`;
+}
+function scaleHTML(s){
+  return `<div class="qbox"><div class="kicker">${s.kicker}</div><h2>${s.title}</h2></div>
+    <div class="scale" id="scale">${[1,2,3,4,5].map(n=>`<button type="button" data-n="${n}">${n}</button>`).join("")}</div>
+    <div class="scale-labels"><span>${s.low}</span><span>${s.high}</span></div>`;
+}
+function cloudHTML(s){
+  return `<div class="qbox"><div class="kicker">${s.kicker}</div><h2>${s.title}</h2><p>${s.hint}</p></div>
+    <form class="cloud" id="cloudForm">
+      <input id="word" maxlength="24" placeholder="Digite e envie" />
+      <button class="go" type="submit">Enviar palavra</button>
+      <div class="pills" id="pills"></div>
+    </form>`;
+}
+
+function bind(s){
+  if(s.type === "content") $("btnNext").onclick = next;
+  if(s.type === "quiz"){
+    $("opts").querySelectorAll(".ans").forEach(b => b.onclick = () => gradeQuiz(+b.dataset.i, s));
+  }
+  if(s.type === "tf"){
+    document.querySelectorAll("#stage .ans").forEach(b => b.onclick = () => gradeTF(b.dataset.v === "true", s, b));
+  }
+  if(s.type === "scale"){
+    $("scale").querySelectorAll("button").forEach(b => b.onclick = next);
+  }
+  if(s.type === "cloud"){
+    $("cloudForm").onsubmit = ev => {
+      ev.preventDefault();
+      const w = $("word").value.trim();
+      if(!w) return;
+      const span = document.createElement("span");
+      span.textContent = w;
+      $("pills").appendChild(span);
+      $("word").value = "";
+      setTimeout(next, 700);
+    };
+  }
+}
+
+function startClock(sec){
+  tTot = sec; tLeft = sec;
+  stopTimer();
+  ticking = setInterval(() => {
+    tLeft -= 0.1;
+    $("bar").style.width = `${Math.max(0, tLeft / tTot) * 100}%`;
+    if(tLeft <= 0){
+      stopTimer();
+      if(STEPS[i].type === "quiz") gradeQuiz(-1, STEPS[i]);
+      else gradeTF(null, STEPS[i], null);
+    }
+  }, 100);
+}
+
+function points(){
+  const ratio = Math.max(0, tLeft / tTot);
+  return Math.round(MIN + (MAX - MIN) * ratio);
+}
+
+function gradeQuiz(choice, s){
+  if(locked) return;
+  locked = true;
+  stopTimer();
+  const ok = choice === s.a;
+  document.querySelectorAll("#stage .ans").forEach(b => {
+    const n = +b.dataset.i;
+    if(n === s.a) b.classList.add("ok");
+    else b.classList.add("dim");
+    if(n === choice && !ok) b.classList.add("bad");
+  });
+  apply(ok);
+}
+
+function gradeTF(val, s, btn){
+  if(locked) return;
+  locked = true;
+  stopTimer();
+  const ok = val === s.a;
+  document.querySelectorAll("#stage .ans").forEach(b => {
+    const v = b.dataset.v === "true";
+    if(v === s.a) b.classList.add("ok");
+    else b.classList.add("dim");
+    if(btn && b === btn && !ok) b.classList.add("bad");
+  });
+  apply(ok);
+}
+
+function apply(ok){
+  let gained = 0;
+  if(ok){
+    gained = points();
+    score += gained; hits++; streak++; best = Math.max(best, streak);
+  } else streak = 0;
+  $("pts").textContent = `${score} pts`;
+  $("rface").textContent = ok ? "✓" : "✕";
+  $("rface").style.background = ok ? "#d9f2de" : "#f8d4d4";
+  $("rtitle").textContent = ok ? "Correto" : (tLeft <= 0 ? "Tempo esgotado" : "Incorreto");
+  $("rsub").textContent = ok ? `+${gained} · sequência ${streak}` : "A alternativa certa ficou destacada";
+  $("reveal").classList.add("show");
+  setTimeout(next, 1600);
+}
+
+function next(){
+  i++;
+  render();
+}
+
+function finish(){
+  show("end");
+  $("endScore").textContent = score;
+  $("endTitle").textContent = hits >= Math.ceil(quizCount * .7) ? `Boa, ${nick}` : `Revise e tente de novo, ${nick}`;
+  $("endSub").textContent = `${hits} de ${quizCount} questões objetivas`;
+  $("endHits").textContent = `${hits} acertos`;
+  $("endStreak").textContent = `melhor sequência ${best}`;
+}
+</script>
+</body>
+</html>

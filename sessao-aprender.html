@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <title>NR 17 — Sessão Aprender</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="question-screen.css">
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; }
+  </style>
+</head>
+<body>
+  <div class="qs-app" id="app">
+    <!-- Capa (igual à referência) -->
+    <section class="qs-home" id="home" aria-label="Abertura do treinamento">
+      <div class="qs-home-photo" aria-hidden="true">
+        <img class="qs-home-photo-img" src="assets/fotos/capa.png" alt="">
+        <div class="qs-home-veil"></div>
+      </div>
+      <div class="qs-home-inner">
+        <div class="qs-home-card">
+          <div class="qs-home-tag">SEGURANÇA DO TRABALHO</div>
+          <h1><em>NR 17</em> —<br>Ergonomia no Comércio e na Logística</h1>
+          <p>Aprenda a identificar riscos e aplicar, na prática, a postura correta em cada função do dia a dia da loja.</p>
+          <div class="qs-home-badges">
+            <div class="qs-home-badge">
+              <div>
+                <strong>5 Módulos</strong>
+                <span>Conteúdo completo</span>
+              </div>
+            </div>
+            <div class="qs-home-badge">
+              <div>
+                <strong>Treinamento</strong>
+                <span>100% online</span>
+              </div>
+            </div>
+          </div>
+          <div class="qs-home-actions">
+            <button type="button" class="qs-home-start" id="btnStartHome">
+              <span>INICIAR O TREINAMENTO</span>
+            </button>
+            <button type="button" class="qs-home-tutorial" id="btnTutorialHome">
+              <span>▶ Ver tutorial</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="qs-home-logo">
+        <img src="assets/fotos/LOGO.png" alt="TecnoCursos">
+      </div>
+    </section>
+
+    <header class="qs-top" id="topBar" hidden>
+      <div class="qs-brand">
+        <img src="assets/fotos/LOGO.png" alt="">
+        <span id="brandTxt">NR 17</span>
+      </div>
+      <div class="qs-progress" id="progress" aria-label="Progresso"></div>
+      <div class="qs-tools">
+        <button type="button" id="btnMode" title="Modo">
+          <span class="qs-label">Aprender</span>
+        </button>
+        <button type="button" id="btnMusic" title="Música" aria-pressed="false">🔇</button>
+        <button type="button" id="btnTranscript" title="Transcrição">Aa</button>
+        <button type="button" id="btnHome" title="Voltar à capa">⌂</button>
+      </div>
+    </header>
+
+    <main class="qs-stage" id="stage" hidden>
+      <button class="qs-nav" id="btnBack" aria-label="Anterior" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="qs-col">
+        <div class="qs-shell" id="shell"></div>
+        <div class="qs-external-continue" id="extContinue">
+          <button type="button" class="qs-btn" id="btnExtContinue">Continuar</button>
+        </div>
+      </div>
+      <button class="qs-nav" id="btnFwd" aria-label="Próximo" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </main>
+  </div>
+
+  <aside class="qs-transcript" id="transcript">
+    <header>
+      <span>Transcrição</span>
+      <button type="button" id="btnCloseTranscript" aria-label="Fechar">×</button>
+    </header>
+    <div class="body" id="transcriptBody"></div>
+  </aside>
+
+  <!-- Modal Tutorial -->
+  <div class="qs-tut-overlay" id="tutorialModal" hidden>
+    <div class="qs-tut-card" role="dialog" aria-modal="true" aria-labelledby="tutTitle">
+      <div class="qs-tut-accent" aria-hidden="true"></div>
+      <div class="qs-tut-badge">▶ TUTORIAL</div>
+      <h2 id="tutTitle">Antes de começar — <span>Orientações iniciais</span></h2>
+      <p>Assista ao vídeo para entender como navegar pelos módulos, responder às atividades e usar as ferramentas.</p>
+      <div class="qs-tut-video">
+        <iframe id="tutIframe" src="https://player-vz-d35edf2a-8e7.tv.pandavideo.com.br/embed/?v=58c2b207-5c32-4336-acba-6df97de39825&saveProgress=false" title="Tutorial do treinamento" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen fetchpriority="high"></iframe>
+      </div>
+      <div class="qs-tut-foot">
+        <button type="button" class="qs-tut-close" id="btnTutorialClose">✓ Entendi, vamos começar</button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
+
+  <script src="question-screen-data.js"></script>
+  <script src="question-screen.js"></script>
+  <script>
+(function () {
+  var session = window.QUESTION_SCREEN_SESSION;
+  if (!session || !session.modules || !session.modules.length) {
+    document.getElementById('shell').innerHTML = '<div class="qs-menu"><p>Conteúdo não encontrado.</p></div>';
+    return;
+  }
+
+  var modules = session.modules;
+  var modIndex = -1;
+  var slideIndex = 0;
+  var answered = {};
+  var qs = null;
+  var mode = 'home'; /* home | menu | play */
+
+  var app = document.getElementById('app');
+  var home = document.getElementById('home');
+  var topBar = document.getElementById('topBar');
+  var stage = document.getElementById('stage');
+  var progressEl = document.getElementById('progress');
+  var shell = document.getElementById('shell');
+  var extContinue = document.getElementById('extContinue');
+  var btnExtContinue = document.getElementById('btnExtContinue');
+  var btnBack = document.getElementById('btnBack');
+  var btnFwd = document.getElementById('btnFwd');
+  var brandTxt = document.getElementById('brandTxt');
+  var transcript = document.getElementById('transcript');
+  var transcriptBody = document.getElementById('transcriptBody');
+  var bgMusic = document.getElementById('bg-music');
+
+  brandTxt.textContent = (session.meta && session.meta.title) || 'NR 17';
+  bgMusic.src = (session.meta && session.meta.musicSrc) || 'musica/musica_foco.mp3';
+  bgMusic.volume = 0.35;
+
+  function setChrome(visible) {
+    if (topBar) topBar.hidden = !visible;
+    if (stage) stage.hidden = !visible;
+    if (home) home.hidden = visible;
+    app.classList.toggle('is-home', !visible);
+  }
+
+  function showHome() {
+    mode = 'home';
+    modIndex = -1;
+    if (qs) { qs.destroy(); qs = null; }
+    setExternalContinue(false);
+    setChrome(false);
+    transcript.classList.remove('open');
+    renderProgress();
+  }
+
+  function currentMod() { return modules[modIndex]; }
+  function screens() { return currentMod() ? currentMod().screens : []; }
+  function current() { return screens()[slideIndex]; }
+
+  function hasLiveVideo(s) {
+    return s && s.type === 'video' && !!(s.embed || s.panda || s.youtube || s.video);
+  }
+
+  function setExternalContinue(on) {
+    if (!extContinue) return;
+    extContinue.classList.toggle('is-on', !!on);
+    if (btnExtContinue) btnExtContinue.disabled = !canForward() && mode === 'play';
+  }
+
+  function renderProgress() {
+    if (mode !== 'play') {
+      progressEl.innerHTML = '';
+      return;
+    }
+    var list = screens();
+    progressEl.innerHTML = list.map(function (_, i) {
+      var cls = i < slideIndex ? 'done' : (i === slideIndex ? 'cur' : '');
+      return '<i class="' + cls + '"></i>';
+    }).join('');
+  }
+
+  function canForward() {
+    var s = current();
+    if (!s) return false;
+    if (s.type === 'question') return !!answered[s.id];
+    return true;
+  }
+
+  function updateNav() {
+    if (mode !== 'play') {
+      btnBack.disabled = true;
+      btnFwd.disabled = true;
+      setExternalContinue(false);
+      return;
+    }
+    /* Na 1ª tela do módulo, Voltar leva ao menu */
+    btnBack.disabled = false;
+    var atEnd = slideIndex >= screens().length - 1;
+    btnFwd.disabled = !canForward() || atEnd;
+    setExternalContinue(hasLiveVideo(current()) && canForward());
+    if (btnExtContinue) {
+      btnExtContinue.textContent = atEnd ? 'Concluir' : 'Continuar';
+      btnExtContinue.disabled = !canForward();
+    }
+  }
+
+  function showTranscript() {
+    if (mode !== 'play') {
+      transcriptBody.textContent = 'Vamos começar pelo Módulo 1? Os demais módulos ficam bloqueados por enquanto.';
+      return;
+    }
+    var s = current();
+    transcriptBody.textContent = (s && (s.transcript || s.explanation || s.body || s.subtitle || s.question || s.title)) || '';
+  }
+
+  function advance() {
+    if (slideIndex >= screens().length - 1) {
+      showMenu();
+      return;
+    }
+    go(1);
+  }
+
+  function showMenu() {
+    mode = 'menu';
+    modIndex = -1;
+    if (qs) { qs.destroy(); qs = null; }
+    brandTxt.textContent = (session.meta && session.meta.title) || 'NR 17';
+    setExternalContinue(false);
+    setChrome(true);
+    shell.innerHTML =
+      '<div class="qs-menu">' +
+        '<button type="button" class="qs-menu-back" id="btnMenuBack">← Voltar à capa</button>' +
+        '<h1>NR 17 — Sessão Aprender</h1>' +
+        '<p class="qs-menu-lead">Conteúdo programático do treinamento. As atividades ficam só no final de cada módulo.</p>' +
+        '<div class="qs-start-callout" role="status">' +
+          '<strong>Vamos começar pelo Módulo 1?</strong>' +
+          '<span>Fundamentos da Ergonomia — toque no card liberado para iniciar.</span>' +
+        '</div>' +
+        '<div class="qs-mod-grid">' +
+          modules.map(function (m, i) {
+            var locked = i > 0;
+            return '<button type="button" class="qs-mod-card' + (locked ? ' is-locked' : ' is-open') + '"' +
+              ' data-mod="' + i + '"' +
+              (locked ? ' disabled aria-disabled="true"' : '') +
+              '>' +
+              '<div class="qs-mod-num">' + m.id + '</div>' +
+              '<strong>' + m.title + '</strong>' +
+              '<span>' + (locked ? 'Em breve — avance pelo Módulo 1' : (m.meta || 'Disponível agora')) + '</span>' +
+              (locked ? '<em class="qs-lock">Bloqueado</em>' : '<em class="qs-go">Começar</em>') +
+            '</button>';
+          }).join('') +
+        '</div>' +
+      '</div>';
+    var menuBack = document.getElementById('btnMenuBack');
+    if (menuBack) menuBack.addEventListener('click', showHome);
+    renderProgress();
+    updateNav();
+    showTranscript();
+  }
+
+  function openModule(i) {
+    if (i > 0) return;
+    setChrome(true);
+    modIndex = i;
+    slideIndex = 0;
+    answered = {};
+    mode = 'play';
+    brandTxt.textContent = 'Módulo ' + currentMod().id;
+    mountSlide();
+  }
+
+  function mountSlide() {
+    var s = current();
+    if (!s) return;
+    var payload = Object.assign({}, s);
+
+    if (qs) qs.destroy();
+    qs = QuestionScreen.mount(shell, payload, {
+      onSelect: function () {
+        answered[s.id] = true;
+        updateNav();
+      },
+      onContinue: function () {
+        advance();
+      }
+    });
+
+    if (s.type !== 'question') answered[s.id] = true;
+    renderProgress();
+    updateNav();
+    showTranscript();
+  }
+
+  function go(delta) {
+    if (mode !== 'play') return;
+    if (delta < 0 && slideIndex <= 0) {
+      showMenu();
+      return;
+    }
+    var next = slideIndex + delta;
+    if (next < 0 || next >= screens().length) return;
+    if (delta > 0 && !canForward()) return;
+    slideIndex = next;
+    mountSlide();
+  }
+
+  function openTutorial() {
+    var modal = document.getElementById('tutorialModal');
+    var iframe = document.getElementById('tutIframe');
+    if (!modal) return;
+    modal.hidden = false;
+    if (iframe && !iframe.getAttribute('data-src')) {
+      iframe.setAttribute('data-src', iframe.src);
+    }
+  }
+
+  function closeTutorial() {
+    var modal = document.getElementById('tutorialModal');
+    var iframe = document.getElementById('tutIframe');
+    if (modal) modal.hidden = true;
+    if (iframe) {
+      var src = iframe.getAttribute('data-src') || iframe.getAttribute('src') || iframe.src;
+      iframe.src = src;
+    }
+  }
+
+  shell.addEventListener('click', function (e) {
+    var card = e.target.closest('.qs-mod-card');
+    if (card) openModule(+card.dataset.mod);
+  });
+
+  btnBack.addEventListener('click', function () { go(-1); });
+  btnFwd.addEventListener('click', function () { go(1); });
+  if (btnExtContinue) {
+    btnExtContinue.addEventListener('click', function () {
+      if (!canForward()) return;
+      advance();
+    });
+  }
+  document.getElementById('btnHome').addEventListener('click', function () {
+    if (mode === 'play') showMenu();
+    else showHome();
+  });
+  document.getElementById('btnStartHome').addEventListener('click', showMenu);
+  document.getElementById('btnTutorialHome').addEventListener('click', openTutorial);
+  document.getElementById('btnTutorialClose').addEventListener('click', closeTutorial);
+  document.getElementById('tutorialModal').addEventListener('click', function (e) {
+    if (e.target === this) closeTutorial();
+  });
+
+  document.getElementById('btnTranscript').addEventListener('click', function () {
+    transcript.classList.toggle('open');
+    this.classList.toggle('is-on', transcript.classList.contains('open'));
+    showTranscript();
+  });
+  document.getElementById('btnCloseTranscript').addEventListener('click', function () {
+    transcript.classList.remove('open');
+    document.getElementById('btnTranscript').classList.remove('is-on');
+  });
+
+  var musicOn = false;
+  var btnMusic = document.getElementById('btnMusic');
+  btnMusic.addEventListener('click', function () {
+    musicOn = !musicOn;
+    btnMusic.classList.toggle('is-on', musicOn);
+    btnMusic.setAttribute('aria-pressed', musicOn ? 'true' : 'false');
+    btnMusic.textContent = musicOn ? '🔊' : '🔇';
+    if (musicOn) bgMusic.play().catch(function () {});
+    else bgMusic.pause();
+  });
+
+  document.getElementById('btnMode').addEventListener('click', function () {
+    alert('Modo Aprender\n\n• Conteúdo dentro do cartão\n• Atividades só no final de cada módulo\n• Use Continuar ou as setas para navegar');
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (!document.getElementById('tutorialModal').hidden && e.key === 'Escape') {
+      closeTutorial();
+      return;
+    }
+    if (mode === 'home') {
+      if (e.key === 'Enter') showMenu();
+      return;
+    }
+    if (e.key === 'ArrowRight') go(1);
+    if (e.key === 'ArrowLeft') go(-1);
+    if (e.key === 'Escape') {
+      if (mode === 'play') showMenu();
+      else showHome();
+    }
+  });
+
+  showHome();
+})();
+  </script>
+</body>
+</html>
