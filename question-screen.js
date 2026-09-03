@@ -317,9 +317,9 @@
     return Math.round(400 + (1000 - 400) * ratio);
   };
 
-  QuestionScreen.prototype._hideVideoTags = function () {
-    var tags = this.el.querySelector('[data-qs-video-tags]');
-    if (tags) tags.classList.add('is-hidden');
+  QuestionScreen.prototype._setVideoPlaying = function (on) {
+    var root = this.el.querySelector('[data-qs-root]') || this.root;
+    if (root) root.classList.toggle('is-playing', !!on);
   };
 
   QuestionScreen.prototype._bindVideoTags = function () {
@@ -328,10 +328,13 @@
     var native = root.querySelector('video.qs-player');
     var iframe = root.querySelector('iframe[data-qs-panda]');
 
-    function hide() { self._hideVideoTags(); }
+    function expand() { self._setVideoPlaying(true); }
+    function collapse() { self._setVideoPlaying(false); }
 
     if (native) {
-      native.addEventListener('play', hide, { once: true });
+      native.addEventListener('play', expand);
+      native.addEventListener('pause', collapse);
+      native.addEventListener('ended', collapse);
     }
 
     this._onVideoMsg = function (ev) {
@@ -348,18 +351,18 @@
         } catch (e) {}
       }
       msg = String(msg).toLowerCase();
-      if (msg === 'panda_play' || msg.indexOf('panda_play') !== -1 || msg === 'play' || msg === 'playing') {
-        hide();
-      }
+      if (msg === 'panda_play' || msg.indexOf('panda_play') !== -1) expand();
+      if (msg === 'panda_pause' || msg.indexOf('panda_pause') !== -1) collapse();
+      if (msg === 'panda_ended' || msg.indexOf('panda_ended') !== -1 || msg.indexOf('panda_complete') !== -1) collapse();
     };
     window.addEventListener('message', this._onVideoMsg);
 
     if (iframe && iframe.id) {
-      this._ensurePandaApi(iframe.id, hide);
+      this._ensurePandaApi(iframe.id, expand, collapse);
     }
   };
 
-  QuestionScreen.prototype._ensurePandaApi = function (iframeId, onPlay) {
+  QuestionScreen.prototype._ensurePandaApi = function (iframeId, onPlay, onIdle) {
     var API = 'https://player.pandavideo.com.br/api.v2.js';
     function bind() {
       try {
@@ -368,7 +371,9 @@
           onReady: function () {
             try {
               player.onEvent(function (e) {
-                if (e && e.message === 'panda_play') onPlay();
+                var msg = e && e.message;
+                if (msg === 'panda_play') onPlay();
+                if (msg === 'panda_pause' || msg === 'panda_ended') onIdle();
               });
             } catch (err) {}
           }
