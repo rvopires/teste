@@ -17,13 +17,18 @@ window.QUESTION_SCREEN_SESSION = {
       id: 1,
       title: "Fundamentos da Ergonomia",
       meta: "Vídeos + reflexão · 4 perguntas no final",
+      titleUnlock: {
+        title: "DETETIVE DA POSTURA",
+        body: "Você já começou a enxergar o trabalho com um novo olhar.",
+        icon: "🕵️"
+      },
       screens: [
         {
           id: "m1-cover",
           type: "cover",
           title: "Módulo 1 — Fundamentos da Ergonomia",
           subtitle: "Como a ergonomia protege sua saúde no dia a dia da loja.",
-          image: "assets/fotos/question-screen/cover.png",
+          image: "assets/fotos/capa-modulo1.png",
           transcript: "Módulo 1: Fundamentos da Ergonomia."
         },
         {
@@ -31,7 +36,8 @@ window.QUESTION_SCREEN_SESSION = {
           type: "reflect",
           kicker: "💭 Reflexão",
           title: "Antes de começar",
-          prompt: "Você já pensou na sua postura hoje?",
+          prompt: "Você já pensou na sua",
+          promptAccent: "postura hoje?",
           answer: "O segredo está na postura correta. Ao longo deste módulo você vai entender como aplicá-la em cada função do chão de loja.",
           transcript: "Antes de começar: pense na sua postura de hoje."
         },
@@ -98,7 +104,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m1-q1",
           type: "question",
           question: "Qual é a origem da palavra \"Ergonomia\"?",
-          image: "assets/fotos/question-screen/cover.png",
+          image: "assets/fotos/m1=p1.png",
           alternatives: [
             { id: "a", text: "Latim, \"força e lei\"", correct: false },
             { id: "b", text: "Grego, \"ergon\" (trabalho) e \"nomos\" (lei, regra)", correct: true },
@@ -112,7 +118,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m1-q2",
           type: "question",
           question: "Qual das opções NÃO é uma das três áreas da ergonomia?",
-          image: "assets/fotos/question-screen/cover.png",
+          image: "assets/fotos/m1=p2.png",
           alternatives: [
             { id: "a", text: "Física", correct: false },
             { id: "b", text: "Organizacional", correct: false },
@@ -126,7 +132,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m1-q3",
           type: "question",
           question: "Grandes resistências (carga e peso) devem ser realizadas por quê?",
-          image: "assets/fotos/question-screen/carga.png",
+          image: "assets/fotos/m1=p3.png",
           alternatives: [
             { id: "a", text: "Somente pela força do trabalhador", correct: false },
             { id: "b", text: "Por máquinas e carrinhos", correct: true },
@@ -140,7 +146,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m1-q4",
           type: "question",
           question: "O que é Segurança do Trabalho, segundo o treinamento?",
-          image: "assets/fotos/question-screen/cover.png",
+          image: "assets/fotos/m1=p4.png",
           alternatives: [
             { id: "a", text: "Cuida da proteção e da integridade da vida do trabalhador", correct: true },
             { id: "b", text: "Um departamento que só existe em fábricas", correct: false },
@@ -156,6 +162,11 @@ window.QUESTION_SCREEN_SESSION = {
       id: 2,
       title: "Movimentação Manual de Cargas",
       meta: "Vídeos + imagens · 4 cenários no final",
+      titleUnlock: {
+        title: "GUARDIÃO DAS CARGAS",
+        body: "Você sabe proteger a coluna ao levantar, transportar e guardar.",
+        icon: "🛡️"
+      },
       screens: [
         {
           id: "m2-cover",
@@ -308,6 +319,11 @@ window.QUESTION_SCREEN_SESSION = {
       id: 3,
       title: "Posturas e Riscos Biomecânicos",
       meta: "Vídeos + conteúdo · 5 V/F no final",
+      titleUnlock: {
+        title: "LEITOR DO CORPO",
+        body: "Você reconhece posturas de risco e os limites do movimento no dia a dia.",
+        icon: "👁️"
+      },
       screens: [
         {
           id: "m3-cover",
@@ -455,6 +471,11 @@ window.QUESTION_SCREEN_SESSION = {
       id: 4,
       title: "Ergonomia em Áreas Administrativas",
       meta: "Vídeos + conteúdo · ordenar a rotina no final",
+      titleUnlock: {
+        title: "AJUSTADOR DO POSTO",
+        body: "Pequenos ajustes no monitor e na rotina agora fazem parte do seu método.",
+        icon: "⚙️"
+      },
       screens: [
         {
           id: "m4-cover",
@@ -558,6 +579,11 @@ window.QUESTION_SCREEN_SESSION = {
       id: 5,
       title: "Ginástica Laboral e Encerramento",
       meta: "Vídeos + conteúdo · jogo de associação no final",
+      titleUnlock: {
+        title: "CAMPEÃO DO ALONGAMENTO",
+        body: "Você leva a ginástica laboral para o turno — e cuida do corpo todos os dias.",
+        icon: "🧘"
+      },
       screens: [
         {
           id: "m5-cover",

@@ -7,7 +7,7 @@
  *  - video:    { type, title, kicker?, duration?, scene?, brief?, video?, youtube?, image?/poster? }
  *  - image:    { type, title, kicker?, body?, bullets?, image, imageFit? }
  *  - quiz-intro: { type, title, body?, count?, minCorrect?, image? }
- *  - quiz-result: { type, passed, score, total, minCorrect, title? }
+ *  - quiz-result: { type, passed, score, total, minCorrect, title?, titleUnlock? }
  *  - finale:   { type, title?, body?, eyebrow?, chips?, image?, kicker? }
  *  - reflect:  { type, prompt, answer, choices?[{icon,text}] }
  *  - compare:  { type, compare:[{ok,label,text}] }
@@ -315,13 +315,20 @@
           return `<button type="button" class="qs-reflect-choice" data-qs-choice="${i}">${c.icon ? `<span aria-hidden="true">${esc(c.icon)}</span>` : ''}${esc(c.text || c.label || '')}</button>`;
         }).join('')}</div>`
       : `<button type="button" class="qs-reflect-tap" data-qs-reveal>Toque para pensar</button>`;
+    var prompt = esc(data.prompt || data.body || '');
+    if (data.promptAccent) {
+      prompt = esc(data.prompt || '') + (data.prompt ? '<br>' : '') +
+        '<span>' + esc(data.promptAccent) + '</span>';
+    }
     return `
       <article class="qs-screen is-content is-text is-reflect" data-qs-root data-type="reflect">
-        <div class="qs-panel qs-panel-text">
-          ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
-          <h2 class="qs-title">${esc(data.title || '')}</h2>
+        <div class="qs-panel qs-panel-text qs-panel-reflect">
+          <header class="qs-reflect-head">
+            ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
+            <h2 class="qs-title">${esc(data.title || '')}</h2>
+          </header>
           <div class="qs-reflect">
-            <p class="qs-reflect-prompt">${esc(data.prompt || data.body || '')}</p>
+            <p class="qs-reflect-prompt">${prompt}</p>
             <div class="qs-reflect-mark" aria-hidden="true">?</div>
             ${choiceHtml}
             <p class="qs-reflect-answer" data-qs-answer hidden>${esc(data.answer || data.quote || '')}</p>
@@ -428,12 +435,38 @@
     var medalName = data.medalName || '';
     var rank = data.medalRank || (passed ? 'gold' : 'none');
     var title = data.title || (passed ? 'Desafio concluído!' : 'Desafio não concluído');
+    var unlock = data.titleUnlock || null;
+    var hasTitle = !!(passed && unlock && unlock.title);
     var desc = data.body || (passed
-      ? ('Você acertou <strong>' + hits + '</strong> de <strong>' + total + '</strong> questões. Parabéns! Pode avançar.')
+      ? ('Você acertou <strong>' + hits + '</strong> de <strong>' + total + '</strong> questões.')
       : ('Você acertou <strong>' + hits + '</strong> de <strong>' + total + '</strong>. É necessário acertar pelo menos <strong>' + min + '</strong>. Estude e tente novamente.'));
     var actions = passed
       ? `<button type="button" class="qs-quiz-intro-btn" data-qs-finish>Continuar</button>`
       : `<button type="button" class="qs-quiz-intro-btn" data-qs-retry>Jogar novamente</button>`;
+    var scoreBar = `<div class="qs-result-scorebar" aria-label="Placar">
+        <span><b>${points}</b> pts</span>
+        <span class="qs-result-scorebar-dot" aria-hidden="true"></span>
+        <span><b>${hits}/${total}</b> acertos</span>
+        ${streak ? `<span class="qs-result-scorebar-dot" aria-hidden="true"></span><span>seq. <b>${streak}</b></span>` : ''}
+      </div>`;
+
+    if (hasTitle) {
+      return `
+      <article class="qs-screen is-quiz-result" data-qs-root data-type="quiz-result">
+        <div class="qs-quiz-result is-pass is-title-focus medal-${esc(rank)}">
+          <p class="qs-result-eyebrow">${esc(unlock.moduleLabel || 'Módulo concluído')}</p>
+          <div class="qs-medal" aria-hidden="true">
+            <span class="qs-medal-face">${esc(medal)}</span>
+          </div>
+          <p class="qs-title-earned-kicker">Título conquistado</p>
+          <h2 class="qs-title-earned-name">${esc(unlock.title)}</h2>
+          ${unlock.body ? `<p class="qs-title-earned-body">${esc(unlock.body)}</p>` : ''}
+          ${scoreBar}
+          <div class="qs-quiz-result-actions">${actions}</div>
+        </div>
+      </article>`;
+    }
+
     return `
       <article class="qs-screen is-quiz-result" data-qs-root data-type="quiz-result">
         <div class="qs-quiz-result ${passed ? 'is-pass' : 'is-fail'} medal-${esc(rank)}">
@@ -442,12 +475,8 @@
           </div>
           ${medalName ? `<div class="qs-medal-name">${esc(medalName)}</div>` : ''}
           <h2 class="qs-quiz-result-title">${esc(title)}</h2>
-          <div class="qs-quiz-result-points">${points}<small>pts</small></div>
+          ${scoreBar}
           <p class="qs-quiz-result-desc">${desc}</p>
-          <div class="qs-quiz-result-stats">
-            <span>${hits}/${total} acertos</span>
-            <span>melhor sequência ${streak}</span>
-          </div>
           <div class="qs-quiz-result-actions">${actions}</div>
         </div>
       </article>`;
@@ -705,10 +734,12 @@
   QuestionScreen.prototype._bindReflect = function () {
     var self = this;
     var root = this.el;
+    var card = root.querySelector('.qs-reflect');
     var answer = root.querySelector('[data-qs-answer]');
     function reveal(btn) {
       beep('click');
       if (btn) btn.classList.add('is-chosen');
+      if (card) card.classList.add('is-revealed');
       if (answer) {
         answer.hidden = false;
         answer.classList.add('show');

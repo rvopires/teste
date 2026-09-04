@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Sessão Aprender</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=opts2">
+  <link rel="stylesheet" href="question-screen.css?v=title4">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -60,8 +60,7 @@
 
     <header class="qs-top" id="topBar" hidden>
       <div class="qs-brand">
-        <img src="assets/fotos/LOGO.png" alt="">
-        <span id="brandTxt">NR 17</span>
+        <img src="assets/fotos/LOGO.png" alt="TecnoCursos">
       </div>
       <div class="qs-progress" id="progress" aria-label="Progresso"></div>
       <div class="qs-pts" id="ptsChip" hidden>0 pts</div>
@@ -73,7 +72,6 @@
         <button type="button" id="btnJump" class="qs-sim-btn" title="Mapa de páginas" hidden>Mapa</button>
         <button type="button" id="btnMusic" title="Música" aria-pressed="false">🔇</button>
         <button type="button" id="btnTranscript" title="Transcrição">Aa</button>
-        <button type="button" id="btnHome" title="Voltar à capa">⌂</button>
       </div>
     </header>
 
@@ -131,19 +129,14 @@
         </div>
         <button type="button" id="btnJumpClose" aria-label="Fechar mapa">×</button>
       </header>
-      <form id="simJumpForm" class="qs-jump-form">
-        <input id="simJumpInput" type="number" min="1" inputmode="numeric" placeholder="Nº da página" aria-label="Número da página">
-        <button type="submit">Ir</button>
-      </form>
-      <p class="qs-jump-hint">Clique na tela ou digite <kbd>go12</kbd> + Enter</p>
       <div class="qs-jump-list" id="simJumpList"></div>
       <button type="button" class="qs-jump-off" id="btnJumpOff">Desligar simulação</button>
     </aside>
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=opts1"></script>
-  <script src="question-screen.js?v=opts1"></script>
+  <script src="question-screen-data.js?v=title4"></script>
+  <script src="question-screen.js?v=title4"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -371,12 +364,12 @@
   var shell = document.getElementById('shell');
   var btnBack = document.getElementById('btnBack');
   var btnFwd = document.getElementById('btnFwd');
-  var brandTxt = document.getElementById('brandTxt');
+  var brandTxt = null;
   var transcript = document.getElementById('transcript');
   var transcriptBody = document.getElementById('transcriptBody');
   var bgMusic = document.getElementById('bg-music');
 
-  brandTxt.textContent = (session.meta && session.meta.title) || 'NR 17';
+  if (brandTxt) brandTxt.textContent = (session.meta && session.meta.title) || 'NR 17';
   if (bgMusic) {
     bgMusic.src = (session.meta && session.meta.musicSrc) || 'musica/musica_foco.mp3';
     bgMusic.volume = 0.35;
@@ -442,13 +435,23 @@
   }
 
   function updateNav() {
+    if (mode === 'home') {
+      btnBack.disabled = true;
+      btnFwd.disabled = true;
+      return;
+    }
+    if (mode === 'menu') {
+      btnBack.disabled = false;
+      btnFwd.disabled = true;
+      return;
+    }
     if (mode !== 'play') {
       btnBack.disabled = true;
       btnFwd.disabled = true;
       return;
     }
     btnBack.disabled = showingResult;
-    btnFwd.disabled = !canForward();
+    btnFwd.disabled = showingResult ? !quizState.passed : !canForward();
   }
 
   function showTranscript() {
@@ -469,6 +472,18 @@
     var min = quizState.minCorrect || Math.ceil(total * 0.75);
     quizState.passed = hits >= min;
     var medal = quizMedal(quizState.passed, hits, total);
+    var m = currentMod() || {};
+    var unlock = m.titleUnlock || null;
+    var titleUnlock = (quizState.passed && unlock)
+      ? {
+          moduleLabel: 'Módulo ' + m.id + ' concluído',
+          title: unlock.title,
+          body: unlock.body,
+          icon: unlock.icon
+        }
+      : null;
+    var faceIcon = titleUnlock ? (titleUnlock.icon || '🏅') : medal.emoji;
+    var faceRank = titleUnlock ? 'title' : medal.rank;
 
     if (qs) qs.destroy();
     qs = QuestionScreen.mount(shell, {
@@ -479,11 +494,12 @@
       minCorrect: min,
       points: quizState.points,
       streak: quizState.bestStreak,
-      medal: medal.emoji,
-      medalName: medal.name,
-      medalRank: medal.rank,
-      icon: medal.emoji,
-      title: quizState.passed ? 'Desafio concluído!' : 'Desafio não concluído'
+      medal: faceIcon,
+      medalName: '',
+      medalRank: faceRank,
+      icon: faceIcon,
+      title: quizState.passed ? 'Desafio concluído!' : 'Desafio não concluído',
+      titleUnlock: titleUnlock
     }, {
       onContinue: handleContinue
     });
@@ -495,7 +511,8 @@
       try { if (typeof playBeep === 'function') playBeep('end'); } catch (e) {}
     }
     transcriptBody.textContent = quizState.passed
-      ? ('Aprovado: ' + hits + ' de ' + total + '. ' + quizState.points + ' pontos. ' + medal.name + '.')
+      ? ('Aprovado: ' + hits + ' de ' + total + '. ' + quizState.points + ' pontos.' +
+        (titleUnlock ? (' Título conquistado: ' + titleUnlock.title + '.') : ''))
       : ('Não aprovado: ' + hits + ' de ' + total + '. Mínimo: ' + min + '.');
   }
 
@@ -575,12 +592,11 @@
     clearAutoAdvance();
     resetQuizState();
     if (qs) { qs.destroy(); qs = null; }
-    brandTxt.textContent = (session.meta && session.meta.title) || 'NR 17';
+    if (brandTxt) brandTxt.textContent = (session.meta && session.meta.title) || 'NR 17';
     setChrome(true);
     var callout = menuCallout();
     shell.innerHTML =
       '<div class="qs-menu">' +
-        '<button type="button" class="qs-menu-back" id="btnMenuBack">← Voltar à capa</button>' +
         '<h1>NR 17 — Sessão Aprender</h1>' +
         '<p class="qs-menu-lead">Conteúdo programático do treinamento. As atividades ficam só no final de cada módulo.</p>' +
         '<div class="qs-start-callout" role="status">' +
@@ -609,8 +625,6 @@
           }).join('') +
         '</div>' +
       '</div>';
-    var menuBack = document.getElementById('btnMenuBack');
-    if (menuBack) menuBack.addEventListener('click', showHome);
     renderProgress();
     updateNav();
     showTranscript();
@@ -626,7 +640,7 @@
     slideIndex = 0;
     answered = {};
     mode = 'play';
-    brandTxt.textContent = 'Módulo ' + currentMod().id;
+    if (brandTxt) brandTxt.textContent = 'Módulo ' + currentMod().id;
     mountSlide();
   }
 
@@ -703,7 +717,7 @@
     modIndex = mi;
     slideIndex = si;
     mode = 'play';
-    brandTxt.textContent = 'Módulo ' + currentMod().id;
+    if (brandTxt) brandTxt.textContent = 'Módulo ' + currentMod().id;
     var s = current();
     if (s && (isQuizStep(s) || s.type === 'quiz-intro' || s.type === 'finale')) {
       prepareQuizForJump(si);
@@ -744,27 +758,26 @@
     jumpOpen = !!on && !!demoMode;
     var panel = document.getElementById('simJump');
     if (panel) panel.hidden = !jumpOpen;
-    if (jumpOpen) {
-      renderJumpList();
-      var input = document.getElementById('simJumpInput');
-      if (input) {
-        input.max = String(catalog.length);
-        input.value = currentGlobalPage() || '';
-      }
-    }
+    if (jumpOpen) renderJumpList();
   }
 
   function syncJumpUI() {
-    var total = catalog.length;
-    var n = currentGlobalPage();
-    var pos = (mode === 'play' && n) ? (n + ' / ' + total) : ('— / ' + total);
+    var globalTotal = catalog.length;
+    var globalN = currentGlobalPage();
+    var globalPos = (mode === 'play' && globalN) ? (globalN + ' / ' + globalTotal) : ('— / ' + globalTotal);
+    var list = screens();
+    var localTotal = list.length;
+    var localN = (mode === 'play' && modIndex >= 0) ? (slideIndex + 1) : 0;
     var chip = document.getElementById('pageChip');
     if (chip) {
-      chip.hidden = !demoMode;
-      chip.textContent = pos;
+      chip.hidden = mode !== 'play' || !localTotal;
+      chip.textContent = localN ? (localN + ' / ' + localTotal) : '0 / 0';
+      chip.title = demoMode
+        ? ('Página do módulo · global ' + globalPos)
+        : 'Página do módulo (capa = 1)';
     }
     var posEl = document.getElementById('simJumpPos');
-    if (posEl) posEl.textContent = pos;
+    if (posEl) posEl.textContent = globalPos;
     var fab = document.getElementById('simFab');
     var btnJump = document.getElementById('btnJump');
     if (fab) fab.hidden = !demoMode;
@@ -852,6 +865,10 @@
   }
 
   function go(delta) {
+    if (mode === 'menu') {
+      if (delta < 0) showHome();
+      return;
+    }
     if (mode !== 'play') return;
     clearAutoAdvance();
     if (showingResult) {
@@ -910,11 +927,6 @@
 
   btnBack.addEventListener('click', function () { sfx('click'); go(-1); });
   btnFwd.addEventListener('click', function () { sfx('click'); advance(); });
-  document.getElementById('btnHome').addEventListener('click', function () {
-    sfx('click');
-    if (mode === 'play') exitPlay();
-    else showHome();
-  });
   document.getElementById('btnStartHome').addEventListener('click', function () { sfx('click'); showMenu(); });
   document.getElementById('btnTutorialHome').addEventListener('click', openTutorial);
   document.getElementById('btnTutorialClose').addEventListener('click', closeTutorial);
@@ -958,13 +970,8 @@
   document.getElementById('btnJumpOff').addEventListener('click', function () {
     if (demoMode) toggleDemoMode();
   });
-  document.getElementById('simJumpForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var n = parseInt(document.getElementById('simJumpInput').value, 10);
-    if (n) jumpToPage(n);
-  });
   document.getElementById('pageChip').addEventListener('click', function () {
-    setJumpOpen(true);
+    if (demoMode) setJumpOpen(true);
   });
 
   function applyDemoUI() {
