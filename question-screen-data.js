@@ -330,7 +330,7 @@ window.QUESTION_SCREEN_SESSION = {
           type: "cover",
           title: "Módulo 3 — Posturas e Riscos",
           subtitle: "Limites do corpo e riscos biomecânicos da função.",
-          image: "assets/fotos/question-screen/postura.png",
+          image: "assets/fotos/m3-p1.png",
           transcript: "Módulo 3: posturas e riscos biomecânicos."
         },
         {
@@ -482,7 +482,7 @@ window.QUESTION_SCREEN_SESSION = {
           type: "cover",
           title: "Módulo 4 — Áreas Administrativas",
           subtitle: "Ajustes simples no posto evitam horas de desconforto.",
-          image: "assets/fotos/question-screen/cover.png",
+          image: "assets/fotos/m4-p1.png",
           transcript: "Módulo 4: ergonomia em áreas administrativas."
         },
         {
@@ -590,7 +590,7 @@ window.QUESTION_SCREEN_SESSION = {
           type: "cover",
           title: "Módulo 5 — Ginástica Laboral",
           subtitle: "Alongamentos simples para antes, durante e depois do turno.",
-          image: "assets/fotos/question-screen/postura.png",
+          image: "assets/fotos/m5-p1.png",
           transcript: "Módulo 5: ginástica laboral."
         },
         {
