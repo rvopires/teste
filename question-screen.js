@@ -217,7 +217,6 @@
           ${mediaHTML(data, { contain: true })}
         </div>
         <div class="qs-panel qs-panel-split">
-          ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
           <h2 class="qs-title">${esc(data.title || '')}</h2>
           ${body}
           ${bullets}
@@ -313,25 +312,36 @@
     }
     if (Array.isArray(data.rules) && data.rules.length) {
       html += `<div class="qs-rules">${data.rules.map(function (r) {
-        return `<article class="qs-rule">
-          ${r.id ? `<span class="qs-rule-id">${esc(r.id)}</span>` : ''}
-          <p>${esc(r.text || r.body || '')}</p>
-        </article>`;
+        return `<article class="qs-rule"><p>${esc(r.text || r.body || '')}</p></article>`;
       }).join('')}</div>`;
     }
     if (data.quote) html += `<blockquote class="qs-quote">${esc(data.quote)}</blockquote>`;
-    if (data.note) html += `<p class="qs-note">${esc(data.note)}</p>`;
+    if (data.note) {
+      if (typeof data.note === 'object' && data.note) {
+        html += `<aside class="qs-note qs-note-card">
+          ${data.note.label ? `<strong class="qs-note-label">${esc(data.note.label)}</strong>` : ''}
+          <span class="qs-note-text">${esc(data.note.text || data.note.body || '')}</span>
+        </aside>`;
+      } else {
+        html += `<p class="qs-note">${esc(data.note)}</p>`;
+      }
+    }
     return html;
   }
 
   function contentHTML(data) {
     var hasImg = !!data.image;
-    var head = `${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
-          <h2 class="qs-title">${esc(data.title || '')}</h2>
+    var rulesCount = Array.isArray(data.rules) ? data.rules.length : 0;
+    var normCompact = !!(data.compact || (hasImg && rulesCount > 0));
+    var head = `<h2 class="qs-title">${esc(data.title || '')}</h2>
           ${contentBlocks(data)}`;
     if (hasImg) {
+      var extra = '';
+      if (normCompact) extra += ' is-norm-compact';
+      if (rulesCount >= 4) extra += ' is-norm-rules';
+      if (Array.isArray(data.stats) && data.stats.length) extra += ' is-norm-stats';
       return `
-      <article class="qs-screen is-content has-split" data-qs-root data-type="content">
+      <article class="qs-screen is-content has-split${extra}" data-qs-root data-type="content">
         <div class="qs-media qs-media-split">
           ${mediaHTML(data)}
         </div>
@@ -374,7 +384,6 @@
       <article class="qs-screen is-content is-text is-reflect" data-qs-root data-type="reflect">
         <div class="qs-panel qs-panel-text qs-panel-reflect">
           <header class="qs-reflect-head">
-            ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
             <h2 class="qs-title">${esc(data.title || '')}</h2>
           </header>
           <div class="qs-reflect">
@@ -389,18 +398,23 @@
 
   function compareHTML(data) {
     var sides = Array.isArray(data.compare) ? data.compare : [];
+    var hasPhotos = sides.some(function (c) { return !!c.image; });
+    var open = !!data.open;
     return `
-      <article class="qs-screen is-content is-text is-compare" data-qs-root data-type="compare">
+      <article class="qs-screen is-content is-text is-compare${hasPhotos ? ' has-photos' : ''}${open ? ' is-open' : ''}" data-qs-root data-type="compare">
         <div class="qs-panel qs-panel-text">
-          ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
           <h2 class="qs-title">${esc(data.title || '')}</h2>
-          <p class="qs-compare-guide">${esc(data.body || 'Toque nos dois cards para comparar')}</p>
+          ${data.body && !open ? `<p class="qs-compare-guide">${esc(data.body)}</p>` : ''}
           <div class="qs-compare">${sides.map(function (c, i) {
             var ok = !!c.ok;
-            return `<button type="button" class="qs-compare-col ${ok ? 'is-ok' : 'is-bad'}" data-qs-compare="${i}">
+            var img = c.image
+              ? `<div class="qs-compare-media"><img class="qs-compare-img" src="${esc(c.image)}" alt="${esc(c.imageAlt || c.label || '')}" loading="eager" decoding="async"></div>`
+              : '';
+            return `<button type="button" class="qs-compare-col ${ok ? 'is-ok' : 'is-bad'}${c.image ? ' has-img' : ''}${open ? ' is-open' : ''}" data-qs-compare="${i}"${open ? ' disabled' : ''}>
               <div class="qs-compare-lbl">${esc(c.label || (ok ? '✓ Correto' : '✕ Evitar'))}</div>
-              <p class="qs-compare-hint">Toque para ver</p>
-              <p class="qs-compare-reveal" hidden>${esc(c.text || c.body || '')}</p>
+              ${img}
+              ${open ? '' : '<p class="qs-compare-hint">Toque para ver</p>'}
+              <p class="qs-compare-reveal"${open ? '' : ' hidden'}>${esc(c.text || c.body || '')}</p>
             </button>`;
           }).join('')}</div>
         </div>
@@ -419,7 +433,6 @@
       <article class="qs-screen is-content is-text is-order is-timed" data-qs-root data-type="order">
         <div class="qs-qbar-wrap"><div class="qs-qbar"><i data-qs-timer></i></div></div>
         <div class="qs-panel qs-panel-text">
-          ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
           <h2 class="qs-title">${esc(data.title || 'Ordene a rotina')}</h2>
           <p class="qs-body">${esc(data.body || 'Toque nos cuidados na ordem que você seguiria.')}</p>
           <p class="qs-seq-progress" data-qs-seq-progress>0 de ${items.length} selecionados</p>
@@ -434,7 +447,6 @@
     return `
       <article class="qs-screen is-content is-text is-match is-dense" data-qs-root data-type="match">
         <div class="qs-panel qs-panel-text">
-          ${data.kicker ? `<div class="qs-kicker">${esc(data.kicker)}</div>` : ''}
           <h2 class="qs-title">${esc(data.title || 'Associe os pares')}</h2>
           <div class="qs-match-hud">
             <span data-qs-match-time>⏱️ 0s</span>
@@ -549,9 +561,8 @@
         <div class="qs-timer" aria-hidden="true"><i data-qs-timer></i></div>
         <div class="qs-media qs-media-hero">
           ${mediaHTML(data)}
-          <div class="qs-ribbon" data-qs-ribbon role="status" aria-live="polite">
-            <span class="qs-badge" data-qs-ribbon-icon></span>
-            <span data-qs-ribbon-text></span>
+          <div class="qs-result-banner" data-qs-result role="status" aria-live="polite" hidden>
+            <span data-qs-result-text></span>
           </div>
         </div>
         <div class="qs-qbar-wrap">
@@ -813,6 +824,10 @@
 
   QuestionScreen.prototype._bindCompare = function () {
     var self = this;
+    if (this.data && this.data.open) {
+      self._complete({ kind: 'compare' });
+      return;
+    }
     var opened = {};
     var cols = this.el.querySelectorAll('[data-qs-compare]');
     cols.forEach(function (btn) {
@@ -1018,28 +1033,29 @@
     });
 
     var media = this.el.querySelector('.qs-media');
-    if (media) media.classList.add('is-answered');
+    if (media) {
+      media.classList.remove('is-ok', 'is-nok');
+      media.classList.add('is-answered', isCorrect ? 'is-ok' : 'is-nok');
+    }
 
-    var ribbon = this.el.querySelector('[data-qs-ribbon]');
-    if (ribbon) {
-      ribbon.classList.remove('show', 'ok', 'nok');
-      void ribbon.offsetWidth;
-      ribbon.classList.add('show', isCorrect ? 'ok' : 'nok');
-      var icon = ribbon.querySelector('[data-qs-ribbon-icon]');
-      var text = ribbon.querySelector('[data-qs-ribbon-text]');
-      if (icon) icon.textContent = isCorrect ? '✓' : '✕';
-      if (text) {
-        if (opinion) text.textContent = 'Registrado';
-        else if (timedOut) text.textContent = 'Tempo esgotado';
-        else if (isCorrect) text.textContent = pts ? ('Correto!  +' + pts) : 'Correto!';
-        else text.textContent = 'Incorreto';
-      }
+    var result = this.el.querySelector('[data-qs-result]');
+    if (result) {
+      result.hidden = false;
+      var resultText = result.querySelector('[data-qs-result-text]');
+      var label = 'Não foi dessa vez';
+      if (opinion) label = 'Registrado';
+      else if (timedOut) label = 'Tempo esgotado';
+      else if (isCorrect) label = pts ? ('Acertou · +' + pts) : 'Acertou';
+      if (resultText) resultText.textContent = label;
     }
 
     var explain = this.el.querySelector('[data-qs-explain]');
-    if (explain && this.data.explanation) {
-      explain.textContent = this.data.explanation;
-      explain.classList.add('show', isCorrect ? 'is-ok' : 'is-nok');
+    if (explain) {
+      var explainText = this.data.explanation || '';
+      if (explainText) {
+        explain.textContent = explainText;
+        explain.classList.add('show', isCorrect ? 'is-ok' : 'is-nok');
+      }
     }
 
     beep(isCorrect ? 'ok' : 'nok');

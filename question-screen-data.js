@@ -214,36 +214,57 @@ window.QUESTION_SCREEN_SESSION = {
         },
         {
           id: "m2-img-numeros",
-          type: "image",
-          kicker: "📄 Texto normativo · 1/2",
+          type: "content",
           title: "NR 17.5 — os 3 números para memorizar",
-          body: "Guarde estes limites — eles voltam na atividade final.",
           image: "assets/fotos/nr175-pag16.png",
-          imageAlt: "Ilustração: 60 cm, 25 kg e 2 horas",
-          imageFit: "contain",
-          bullets: [
-            "60 cm — distância máxima de pega",
-            "25 kg — limite para transporte sozinho",
-            "2 horas — pausa na movimentação contínua"
+          imageAlt: "Ilustração: os 3 números da NR 17.5 no estoque — 60 cm, 25 kg e 2 horas",
+          stats: [
+            { num: "60 cm", label: "distância máxima de pega" },
+            { num: "25 kg", label: "limite para transporte sozinho" },
+            { num: "2 horas", label: "intervalo máximo sem pausa" }
           ],
-          transcript: "Imagem: 60 cm, 25 kg e pausa a cada 2 horas."
+          rules: [
+            {
+              text: "Não exigir nem admitir transporte manual cujo peso comprometa a saúde ou segurança; reduzir a carga para mulher e trabalhador menor."
+            },
+            {
+              text: "Organizar pega e depósito para evitar flexões, extensões e rotações excessivas do tronco; cargas o mais próximo possível do corpo."
+            },
+            {
+              text: "É vedado o levantamento quando a distância horizontal da pega for superior a 60 cm."
+            }
+          ],
+          note: {
+            label: "Importante",
+            text: "Sozinho só até 25 kg. Acima disso: duas pessoas ou equipamento, com luvas."
+          },
+          transcript: "NR 17.5: 60 cm de pega, 25 kg sozinho e pausa a cada 2 horas."
         },
         {
           id: "m2-img-regras",
-          type: "image",
-          kicker: "📄 Texto normativo · 2/2",
+          type: "content",
           title: "NR 17.5 — demais regras",
-          body: "Empurrar e puxar também são regulados. Quem movimenta carga com frequência precisa de treinamento.",
           image: "assets/fotos/nr175-pag17.png",
-          imageAlt: "Ilustração: demais regras da NR 17.5",
-          imageFit: "contain",
-          bullets: [
-            "Sem cargas que comprometam a saúde",
-            "Sem flexão/torção excessiva do tronco",
-            "Facilitadores e pausas a cada 2 h",
-            "Não se aplica a transporte de pessoas"
+          imageAlt: "Ilustração: demais regras da NR 17.5 no depósito — paleteira, pausa, orientação e só cargas",
+          rules: [
+            {
+              text: "Impulsão/tração (vagonetes, carros de mão, paleteira) também deve observar carga, frequência, pega e distância."
+            },
+            {
+              text: "Prevenção: meios técnicos facilitadores, peso e tamanho adequados, pausas não superiores a 2 horas."
+            },
+            {
+              text: "Quem faz transporte manual não eventual deve receber orientação sobre os métodos corretos."
+            },
+            {
+              text: "Este capítulo não se aplica a levantamento, transporte e movimentação de pessoas — só de cargas."
+            }
           ],
-          transcript: "Imagem: demais regras da NR 17.5."
+          note: {
+            label: "Lembrete",
+            text: "Acima de 25 kg, use duas pessoas ou equipamento — e luvas."
+          },
+          transcript: "NR 17.5: impulsão e tração, pausas a cada 2 horas, orientação e só cargas — nunca pessoas."
         },
         {
           id: "m2-img-equip",
@@ -348,29 +369,40 @@ window.QUESTION_SCREEN_SESSION = {
         {
           id: "m3-iso",
           type: "content",
-          kicker: "📄 Texto normativo",
           title: "O que diz a ISO 11226",
-          body: "Memorize estes 2 limites da ISO 11226.",
+          image: "assets/fotos/p23.png",
+          imageAlt: "Ilustração ISO 11226: postura estática de 4 segundos, variação a cada 2 horas e zonas de alcance na loja",
           stats: [
-            { icon: "⏱️", num: "4 s", label: "já é postura estática de trabalho" },
-            { icon: "🔄", num: "2 h", label: "limite antes de variar a postura" }
+            { num: "4 s", label: "já é postura estática de trabalho" },
+            { num: "2 h", label: "limite antes de variar a postura" }
           ],
           rules: [
-            { id: "🚫", text: "Posturas ajoelhada e agachada devem ser evitadas no abastecimento — usar sempre um suporte para sentar." },
-            { id: "🧍", text: "Em pé: tronco sem flexão rotineira; itens frequentes no alcance normal, ocasionais no alcance máximo." },
-            { id: "📏", text: "Baixa estatura: pés apoiados, tronco próximo ao mobiliário, sem compressão do corpo." }
+            { text: "Posturas ajoelhada e agachada devem ser evitadas no abastecimento — usar sempre um suporte para sentar." },
+            { text: "Em pé: tronco sem flexão rotineira; itens frequentes no alcance normal, ocasionais no alcance máximo." },
+            { text: "Baixa estatura: pés apoiados, tronco próximo ao mobiliário, sem compressão do corpo." }
           ],
           transcript: "ISO 11226: 4 segundos e variação antes de 2 horas."
         },
         {
           id: "m3-reposicao",
           type: "compare",
-          kicker: "👆 Compare",
           title: "Reposição baixa: certo × errado",
-          body: "Toque nos dois cards para comparar",
+          open: true,
           compare: [
-            { ok: true, label: "✓ Correto", text: "Use o suporte para sentar — joelhos e coluna agradecem." },
-            { ok: false, label: "✕ Evitar", text: "Agachar por tempo prolongado sobrecarrega joelhos e coluna." }
+            {
+              ok: true,
+              label: "✓ Correto",
+              image: "assets/fotos/p24.1.png",
+              imageAlt: "Colaborador sentado no suporte diante da prateleira baixa",
+              text: "Use o suporte para sentar — joelhos e coluna agradecem."
+            },
+            {
+              ok: false,
+              label: "✕ Evitar",
+              image: "assets/fotos/p24.2.png",
+              imageAlt: "Colaborador agachado diante da prateleira baixa",
+              text: "Agachar por tempo prolongado sobrecarrega joelhos e coluna."
+            }
           ],
           transcript: "Na prateleira baixa, use o suporte para sentar."
         },

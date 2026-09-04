@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Sessão Aprender</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=moddone-green">
+  <link rel="stylesheet" href="question-screen.css?v=photofb15">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -138,8 +138,8 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=capas-m345"></script>
-  <script src="question-screen.js?v=capas-m345"></script>
+  <script src="question-screen-data.js?v=photofb15"></script>
+  <script src="question-screen.js?v=photofb15"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -303,7 +303,65 @@
   }
 
   var progress = { unlockedUpTo: 0, completed: {} };
-  try { localStorage.removeItem('nr17-sessao-aprender-progress'); } catch (err) {}
+  var RESUME_KEY = 'nr17-sessao-aprender-resume';
+
+  function saveResume() {
+    try {
+      localStorage.setItem(RESUME_KEY, JSON.stringify({
+        mode: mode,
+        modIndex: modIndex,
+        slideIndex: slideIndex,
+        progress: progress,
+        answered: answered,
+        quizState: quizState,
+        showingResult: showingResult,
+        sessionAnswers: sessionAnswers
+      }));
+    } catch (err) {}
+  }
+
+  function loadResume() {
+    try {
+      var raw = localStorage.getItem(RESUME_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function applyResume(saved) {
+    if (!saved || typeof saved !== 'object') return false;
+    if (saved.progress && typeof saved.progress === 'object') {
+      progress.unlockedUpTo = Math.max(0, Number(saved.progress.unlockedUpTo) || 0);
+      progress.completed = saved.progress.completed && typeof saved.progress.completed === 'object'
+        ? saved.progress.completed
+        : {};
+    }
+    if (saved.sessionAnswers && typeof saved.sessionAnswers === 'object') {
+      sessionAnswers = saved.sessionAnswers;
+    }
+    if (saved.mode === 'menu') {
+      showMenu();
+      return true;
+    }
+    if (saved.mode === 'play' && saved.modIndex >= 0 && modules[saved.modIndex]) {
+      var list = modules[saved.modIndex].screens || [];
+      var si = Math.max(0, Math.min(Number(saved.slideIndex) || 0, list.length - 1));
+      modIndex = saved.modIndex;
+      slideIndex = si;
+      answered = saved.answered && typeof saved.answered === 'object' ? saved.answered : {};
+      if (saved.quizState && typeof saved.quizState === 'object') quizState = saved.quizState;
+      showingResult = !!saved.showingResult;
+      mode = 'play';
+      setChrome(true);
+      if (brandTxt) brandTxt.textContent = 'Módulo ' + currentMod().id;
+      if (showingResult) showQuizResult();
+      else mountSlide();
+      return true;
+    }
+    return false;
+  }
 
   var demoMode = false;
   try { demoMode = sessionStorage.getItem('nr17-demoMode') === '1'; } catch (err) {}
@@ -325,6 +383,7 @@
     if (modIndex + 1 < modules.length) {
       progress.unlockedUpTo = Math.max(progress.unlockedUpTo, modIndex + 1);
     }
+    saveResume();
   }
 
   function menuCallout() {
@@ -398,6 +457,7 @@
     transcript.classList.remove('open');
     renderProgress();
     syncJumpUI();
+    saveResume();
   }
 
   function currentMod() { return modules[modIndex]; }
@@ -517,6 +577,7 @@
       ? ('Aprovado: ' + hits + ' de ' + total + '. ' + quizState.points + ' pontos.' +
         (titleUnlock ? (' Título conquistado: ' + titleUnlock.title + '.') : ''))
       : ('Não aprovado: ' + hits + ' de ' + total + '. Mínimo: ' + min + '.');
+    saveResume();
   }
 
   function restartQuiz() {
@@ -632,6 +693,7 @@
     updateNav();
     showTranscript();
     syncJumpUI();
+    saveResume();
   }
 
   function openModule(i) {
@@ -773,16 +835,11 @@
     var globalTotal = catalog.length;
     var globalN = currentGlobalPage();
     var globalPos = (mode === 'play' && globalN) ? (globalN + ' / ' + globalTotal) : ('— / ' + globalTotal);
-    var list = screens();
-    var localTotal = list.length;
-    var localN = (mode === 'play' && modIndex >= 0) ? (slideIndex + 1) : 0;
     var chip = document.getElementById('pageChip');
     if (chip) {
-      chip.hidden = mode !== 'play' || !localTotal;
-      chip.textContent = localN ? (localN + ' / ' + localTotal) : '0 / 0';
-      chip.title = demoMode
-        ? ('Página do módulo · global ' + globalPos)
-        : 'Página do módulo (capa = 1)';
+      chip.hidden = mode !== 'play' || !globalTotal;
+      chip.textContent = globalN ? (globalN + ' / ' + globalTotal) : '0 / 0';
+      chip.title = 'Página do treinamento (total)';
     }
     var posEl = document.getElementById('simJumpPos');
     if (posEl) posEl.textContent = globalPos;
@@ -888,6 +945,7 @@
     updatePtsChip();
     showTranscript();
     syncJumpUI();
+    saveResume();
   }
 
   function go(delta) {
@@ -1167,7 +1225,7 @@
     requestAnimationFrame(frame);
   })();
 
-  showHome();
+  if (!applyResume(loadResume())) showHome();
 })();
   </script>
 </body>
