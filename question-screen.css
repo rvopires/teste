@@ -1394,32 +1394,30 @@
   color: var(--qs-ink);
 }
 
-/* paleta verde/vermelho (capa) */
-.qs-opt[data-tone="0"] { background: var(--qs-red); }
-.qs-opt[data-tone="1"] { background: var(--qs-green); }
-.qs-opt[data-tone="2"] { background: #8b1e2d; }
-.qs-opt[data-tone="3"] { background: #0a3d30; }
+/* 4 tons bem distintos — nunca vermelho/verde (só no feedback) */
+.qs-opt[data-tone="0"] { background: #2563eb; } /* azul */
+.qs-opt[data-tone="1"] { background: #ea580c; } /* laranja */
+.qs-opt[data-tone="2"] { background: #db2777; } /* magenta */
+.qs-opt[data-tone="3"] { background: #7c3aed; } /* roxo */
 
 .qs-opt.is-selected:not(.is-revealed) {
   outline: 3px solid #fff;
   outline-offset: 2px;
 }
 
-.qs-opt.is-correct {
-  background: var(--qs-ok) !important;
+/* pós-resposta: mantém a cor da alternativa; acerto/erro só no ribbon/explicação */
+.qs-opt.is-correct,
+.qs-opt.is-wrong {
   outline: 3px solid #fff;
   outline-offset: 2px;
   filter: none;
   opacity: 1;
 }
-.qs-opt.is-correct .qs-mark { display: grid; color: var(--qs-ok-dk); }
-
-.qs-opt.is-wrong {
-  background: var(--qs-red-dk) !important;
-  outline: 3px solid rgba(255, 255, 255, 0.55);
-  outline-offset: 2px;
+.qs-opt.is-correct .qs-mark,
+.qs-opt.is-wrong .qs-mark {
+  display: grid;
+  color: var(--qs-ink);
 }
-.qs-opt.is-wrong .qs-mark { display: grid; color: var(--qs-red-dk); }
 
 .qs-opt.is-dim {
   opacity: 0.38;
