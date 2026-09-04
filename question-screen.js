@@ -32,7 +32,50 @@
     return sfxCtx;
   }
 
-  function playBeep(type) {
+  var quizCorrectAudio = null;
+  var quizWrongAudio = null;
+  var QUIZ_CORRECT_SFX = encodeURI('assets/efeitos sonoros/correct-answer.mp3');
+  var QUIZ_WRONG_SFX = encodeURI('assets/efeitos sonoros/OBJMisc-wrong_answer-Elevenlabs.mp3');
+
+  function playQuizMp3(kind) {
+    var isOk = kind === 'ok' || kind === 'correct';
+    var src = isOk ? QUIZ_CORRECT_SFX : QUIZ_WRONG_SFX;
+    try {
+      ensureSfx();
+      var audio = isOk ? quizCorrectAudio : quizWrongAudio;
+      if (!audio) {
+        audio = new Audio(src);
+        audio.preload = 'auto';
+        audio.volume = 0.45;
+        if (isOk) quizCorrectAudio = audio;
+        else quizWrongAudio = audio;
+      }
+      try {
+        if (quizCorrectAudio && quizCorrectAudio !== audio) {
+          quizCorrectAudio.pause();
+          quizCorrectAudio.currentTime = 0;
+        }
+        if (quizWrongAudio && quizWrongAudio !== audio) {
+          quizWrongAudio.pause();
+          quizWrongAudio.currentTime = 0;
+        }
+      } catch (e) {}
+      try {
+        if (audio.readyState >= 1) audio.currentTime = 0;
+      } catch (e2) {
+        try { audio.load(); } catch (e3) {}
+      }
+      var p = audio.play();
+      if (p && typeof p.then === 'function') {
+        p.catch(function () { playBeepSynth(isOk ? 'ok' : 'nok'); });
+      }
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function playBeepSynth(type) {
     var ctx = ensureSfx();
     if (!ctx) return;
     try {
@@ -58,7 +101,7 @@
         beepNote(659.25, 0.08, 0.12, 0.16, 'sine');
         beepNote(783.99, 0.16, 0.22, 0.16, 'sine');
       } else if (type === 'nok') {
-        beepNote(340, 0, 0.28, 0.15, 'triangle', 130);
+        beepNote(320, 0, 0.28, 0.16, 'triangle', 140);
       } else if (type === 'end') {
         beepNote(523.25, 0, 0.16, 0.18, 'triangle');
         beepNote(659.25, 0.1, 0.16, 0.18, 'triangle');
@@ -68,6 +111,13 @@
         beepNote(800, 0, 0.07, 0.08, 'sine', 1200);
       }
     } catch (e) {}
+  }
+
+  function playBeep(type) {
+    if (type === 'ok' || type === 'correct' || type === 'nok') {
+      if (playQuizMp3(type === 'correct' ? 'ok' : type)) return;
+    }
+    playBeepSynth(type);
   }
   global.playBeep = playBeep;
   if (typeof document !== 'undefined') {
@@ -104,7 +154,7 @@
     opts = opts || {};
     var fit = data.imageFit === 'contain' || opts.contain ? 'contain' : 'cover';
     if (data.image) {
-      return `<img class="qs-img qs-img-${fit}" src="${esc(data.image)}" alt="${esc(data.imageAlt || data.title || '')}" loading="eager" onerror="this.classList.add('is-broken');this.nextElementSibling&&this.nextElementSibling.classList.add('show');">` +
+      return `<img class="qs-img qs-img-${fit}" src="${esc(data.image)}" alt="${esc(data.imageAlt || data.title || '')}" loading="eager" decoding="async" fetchpriority="high" onerror="this.classList.add('is-broken');this.nextElementSibling&&this.nextElementSibling.classList.add('show');">` +
         `<div class="qs-media-fallback qs-img-fallback" aria-hidden="true">${esc(data.icon || '🖼️')}</div>`;
     }
     return `<div class="qs-media-fallback" aria-hidden="true">${esc(data.icon || '📘')}</div>`;
@@ -956,7 +1006,7 @@
         }
         return;
       }
-      if (i === correctIndex) {
+      if (isCorrect && i === correctIndex) {
         btn.classList.add('is-correct');
         btn.querySelector('.qs-mark').textContent = '✓';
       } else if (!timedOut && i === index) {

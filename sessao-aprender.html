@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Sessão Aprender</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=title4">
+  <link rel="stylesheet" href="question-screen.css?v=moddone-green">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -16,8 +16,11 @@
     <!-- Capa (igual à referência) -->
     <section class="qs-home" id="home" aria-label="Abertura do treinamento">
       <div class="qs-home-photo" aria-hidden="true">
-        <img class="qs-home-photo-img" src="assets/fotos/capa.png" alt="">
+        <img class="qs-home-photo-img" id="homePhotoImg" src="assets/fotos/capa.png" alt="">
         <div class="qs-home-veil"></div>
+        <div class="qs-home-screen-fx" id="homeScreenFx">
+          <img class="qs-home-screen-logo" id="homeScreenLogo" src="assets/fotos/logo-bounce.png" alt="Leroy Merlin">
+        </div>
       </div>
       <div class="qs-home-inner">
         <div class="qs-home-card">
@@ -135,8 +138,8 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=title4"></script>
-  <script src="question-screen.js?v=title4"></script>
+  <script src="question-screen-data.js?v=fotos-m2m3"></script>
+  <script src="question-screen.js?v=fotos-m2m3"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -612,7 +615,7 @@
             var statusCls = locked ? 'qs-lock' : (done ? 'qs-done' : 'qs-go');
             var meta = locked
               ? ('Conclua o Módulo ' + modules[i - 1].id + ' para liberar')
-              : (done ? 'Toque para revisar' : (m.meta || 'Disponível agora'));
+              : (done ? 'Toque para revisar' : 'Disponível agora');
             return '<button type="button" class="qs-mod-card' + cls + '"' +
               ' data-mod="' + i + '"' +
               (locked ? ' disabled aria-disabled="true"' : '') +
@@ -641,6 +644,11 @@
     answered = {};
     mode = 'play';
     if (brandTxt) brandTxt.textContent = 'Módulo ' + currentMod().id;
+    prefetchNearbyImages(0);
+    var list = screens();
+    for (var j = 0; j < list.length; j++) {
+      if (list[j] && list[j].image) prefetchImage(list[j].image);
+    }
     mountSlide();
   }
 
@@ -786,11 +794,29 @@
     else if (!demoMode) setJumpOpen(false);
   }
 
+  var imagePrefetchCache = {};
+  function prefetchImage(src) {
+    if (!src || imagePrefetchCache[src]) return;
+    imagePrefetchCache[src] = true;
+    var img = new Image();
+    img.decoding = 'async';
+    img.src = src;
+  }
+  function prefetchNearbyImages(fromIndex) {
+    var list = screens();
+    var start = Math.max(0, fromIndex | 0);
+    var end = Math.min(list.length, start + 3);
+    for (var i = start; i < end; i++) {
+      if (list[i] && list[i].image) prefetchImage(list[i].image);
+    }
+  }
+
   function mountSlide() {
     var s = current();
     if (!s) return;
     clearAutoAdvance();
     showingResult = false;
+    prefetchNearbyImages(slideIndex);
     var payload = Object.assign({}, s);
 
     if (s.type === 'finale') {
@@ -1077,6 +1103,69 @@
       else showHome();
     }
   });
+
+  /* Logo Leroy na tela do monitor da capa (como na referência) */
+  (function () {
+    var home = document.getElementById('home');
+    var photoWrap = home && home.querySelector('.qs-home-photo');
+    var photoImg = document.getElementById('homePhotoImg');
+    var screenFx = document.getElementById('homeScreenFx');
+    var logo = document.getElementById('homeScreenLogo');
+    if (!home || !photoWrap || !photoImg || !screenFx || !logo) return;
+
+    var SCREEN = { left: 0.8336, top: 0.2604, right: 0.9813, bottom: 0.4299 };
+    var boxW = 0, boxH = 0;
+
+    function layout() {
+      var cw = photoWrap.clientWidth, ch = photoWrap.clientHeight;
+      var nw = photoImg.naturalWidth, nh = photoImg.naturalHeight;
+      if (!cw || !ch || !nw || !nh) return;
+      var scale = Math.max(cw / nw, ch / nh);
+      var rw = nw * scale, rh = nh * scale;
+      var offX = cw - rw;
+      var offY = (ch - rh) / 2;
+      var sx = offX + SCREEN.left * rw;
+      var sy = offY + SCREEN.top * rh;
+      var sw = (SCREEN.right - SCREEN.left) * rw;
+      var sh = (SCREEN.bottom - SCREEN.top) * rh;
+      screenFx.style.left = sx + 'px';
+      screenFx.style.top = sy + 'px';
+      screenFx.style.width = sw + 'px';
+      screenFx.style.height = sh + 'px';
+      boxW = sw; boxH = sh;
+    }
+
+    if (photoImg.complete && photoImg.naturalWidth) layout();
+    photoImg.addEventListener('load', layout);
+    window.addEventListener('resize', function () {
+      clearTimeout(window.__homeScreenLt);
+      window.__homeScreenLt = setTimeout(layout, 120);
+    });
+    if (window.ResizeObserver) new ResizeObserver(layout).observe(photoWrap);
+
+    var px = 6, py = 6, vx = 42, vy = 31, last = null;
+    function isActive() {
+      return !home.hidden && document.visibilityState === 'visible';
+    }
+    function frame(ts) {
+      requestAnimationFrame(frame);
+      if (!boxW || !boxH) layout();
+      if (!isActive() || !boxW || !boxH) { last = ts; return; }
+      if (last == null) { last = ts; return; }
+      var dt = Math.min((ts - last) / 1000, 0.05);
+      last = ts;
+      var lw = logo.offsetWidth, lh = logo.offsetHeight;
+      if (!lw || !lh) return;
+      px += vx * dt; py += vy * dt;
+      var maxX = boxW - lw, maxY = boxH - lh;
+      if (px < 0) { px = 0; vx = Math.abs(vx); }
+      else if (px > maxX) { px = maxX; vx = -Math.abs(vx); }
+      if (py < 0) { py = 0; vy = Math.abs(vy); }
+      else if (py > maxY) { py = maxY; vy = -Math.abs(vy); }
+      logo.style.transform = 'translate(' + px + 'px,' + py + 'px)';
+    }
+    requestAnimationFrame(frame);
+  })();
 
   showHome();
 })();

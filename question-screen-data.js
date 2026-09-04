@@ -173,7 +173,7 @@ window.QUESTION_SCREEN_SESSION = {
           type: "cover",
           title: "Módulo 2 — Movimentação de Cargas",
           subtitle: "Levantar, transportar e guardar mercadorias sem prejudicar a coluna.",
-          image: "assets/fotos/question-screen/carga.png",
+          image: "assets/fotos/m2-p1.png",
           transcript: "Módulo 2: movimentação manual de cargas."
         },
         {
@@ -269,7 +269,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m2-q1",
           type: "question",
           question: "Colaborador levanta sozinho 18 kg, com a pega próxima ao corpo. Liberar?",
-          image: "assets/fotos/question-screen/carga.png",
+          image: "assets/fotos/m2-p9.png",
           alternatives: [
             { id: "a", text: "Liberar", correct: true },
             { id: "b", text: "Não liberar", correct: false }
@@ -281,7 +281,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m2-q2",
           type: "question",
           question: "Caixa de 30 kg do estoque ao checkout. Liberar transporte sozinho?",
-          image: "assets/fotos/question-screen/carga.png",
+          image: "assets/fotos/m2-p10.png",
           alternatives: [
             { id: "a", text: "Liberar", correct: false },
             { id: "b", text: "Não liberar", correct: true }
@@ -293,7 +293,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m2-q3",
           type: "question",
           question: "A pega está a 70 cm do corpo. Liberar o levantamento nessa posição?",
-          image: "assets/fotos/question-screen/carga.png",
+          image: "assets/fotos/m2-p11.png",
           alternatives: [
             { id: "a", text: "Liberar", correct: false },
             { id: "b", text: "Não liberar", correct: true }
@@ -305,7 +305,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m2-q4",
           type: "question",
           question: "Transporte contínuo de caixas por 3 horas sem pausa. Liberar a rotina?",
-          image: "assets/fotos/question-screen/carga.png",
+          image: "assets/fotos/m2-p12.png",
           alternatives: [
             { id: "a", text: "Liberar", correct: false },
             { id: "b", text: "Não liberar", correct: true }
@@ -409,7 +409,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m3-q1",
           type: "question",
           question: "Uma postura mantida por mais de 4 segundos já é considerada postura estática.",
-          image: "assets/fotos/question-screen/postura.png",
+          image: "assets/fotos/m3-p8.png",
           alternatives: [
             { id: "a", text: "Verdadeiro", correct: true },
             { id: "b", text: "Falso", correct: false }
@@ -421,7 +421,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m3-q2",
           type: "question",
           question: "Ajoelhar ou agachar por longos períodos não é problema se a pessoa se sentir confortável.",
-          image: "assets/fotos/question-screen/postura.png",
+          image: "assets/fotos/m3-p9.png",
           alternatives: [
             { id: "a", text: "Verdadeiro", correct: false },
             { id: "b", text: "Falso", correct: true }
@@ -433,7 +433,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m3-q3",
           type: "question",
           question: "Para pessoas de baixa estatura, os pés devem estar apoiados e sem compressão pelo mobiliário.",
-          image: "assets/fotos/question-screen/postura.png",
+          image: "assets/fotos/m3-p10.png",
           alternatives: [
             { id: "a", text: "Verdadeiro", correct: true },
             { id: "b", text: "Falso", correct: false }
@@ -445,7 +445,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m3-q4",
           type: "question",
           question: "A variação postural contínua deve acontecer antes de completar 2 horas na mesma postura.",
-          image: "assets/fotos/question-screen/postura.png",
+          image: "assets/fotos/m3-p11.png",
           alternatives: [
             { id: "a", text: "Verdadeiro", correct: true },
             { id: "b", text: "Falso", correct: false }
