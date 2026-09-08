@@ -11,8 +11,8 @@
  *
  * Para gerar/atualizar os áudios, veja as instruções no generate-audios.js.
  *
- * Fase atual: ligado na abertura e na capa do Módulo 1 (CONFIG.enabledPages).
- * Para liberar em todas as telas, troque o array por null.
+ * Ligado em todas as telas (CONFIG.enabledPages = null). Para limitar a
+ * algumas, troque por uma lista de chaves, ex.: ['home', 'm1-cover'].
  */
 (function (global) {
   'use strict';
@@ -24,17 +24,18 @@
     debounceMs: 300,
 
     // chaves de página com narração ligada; null = todas
-    enabledPages: ['home', 'm1-cover']
+    enabledPages: null
   };
 
   var T = global.NarrationText;
 
   var state = {
-    getState: null,   // função da página: devolve { screen, page, total, mode }
+    getState: null,   // função da página: devolve { mode, screen, nextModule }
     audio: null,
     playId: 0,
     timer: null,
-    button: null
+    button: null,
+    auto: false       // ligada: continua narrando a cada troca de tela
   };
 
   /* ── Estado atual ──────────────────────────────────────────────────── */
@@ -43,26 +44,14 @@
     return typeof state.getState === 'function' ? state.getState() : null;
   }
 
-  // identifica a tela: 'home' na abertura, o id da tela nos módulos
+  // identifica a tela: 'home' na abertura, 'menu-N' no menu (varia com o
+  // módulo liberado) e o id da tela dentro dos módulos
   function getPageKey() {
     var st = readState();
     if (!st) return '';
     if (st.mode === 'home') return T.HOME_KEY;
+    if (st.mode === 'menu') return T.menuAudioKey(st.nextModule);
     return (st.screen && st.screen.id) || '';
-  }
-
-  function getPageLabel() {
-    var st = readState();
-    if (!st || st.mode === 'home') return '';
-    return T.pageLabel(st.page, st.total);
-  }
-
-  // o mesmo texto que o generate-audios.js usou para gravar o mp3
-  function getCurrentNarrationText() {
-    var st = readState();
-    if (!st) return '';
-    if (st.mode === 'home') return T.buildHomeText();
-    return T.buildScreenText(st.screen, st.page, st.total);
   }
 
   function getAudioUrl(key) {
@@ -148,6 +137,38 @@
     speakCurrent();
   }
 
+  /* ── Interruptor ───────────────────────────────────────────────────── */
+
+  // "auto" é o estado do botão: enquanto ligado, cada tela nova é narrada.
+  // Fica ligado mesmo em telas sem áudio, e volta a falar na próxima que tiver.
+  function setAuto(on) {
+    state.auto = !!on;
+    if (state.button) {
+      state.button.classList.toggle('is-on', state.auto);
+      state.button.setAttribute('aria-pressed', state.auto ? 'true' : 'false');
+    }
+  }
+
+  function isAuto() {
+    return state.auto;
+  }
+
+  function toggleNarration() {
+    if (state.auto) {
+      setAuto(false);
+      stopSpeech();
+    } else {
+      setAuto(true);
+      replay();
+    }
+  }
+
+  // a página avisa que trocou de tela, ou que a tela atual revelou conteúdo
+  function pageChanged() {
+    stopSpeech();
+    if (state.auto) speakCurrent();
+  }
+
   function bindNarrationEvents(opts) {
     opts = opts || {};
     if (typeof opts.getState === 'function') state.getState = opts.getState;
@@ -158,12 +179,14 @@
     config: CONFIG,
     bindNarrationEvents: bindNarrationEvents,
     getPageKey: getPageKey,
-    getPageLabel: getPageLabel,
-    getCurrentNarrationText: getCurrentNarrationText,
     getAudioUrl: getAudioUrl,
     speakCurrent: speakCurrent,
     replay: replay,
     stopSpeech: stopSpeech,
+    toggleNarration: toggleNarration,
+    pageChanged: pageChanged,
+    setAuto: setAuto,
+    isAuto: isAuto,
     isPlaying: isPlaying,
     isActive: isActive,
     isEnabled: isEnabled

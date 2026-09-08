@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="referrer" content="no-referrer">
-  <title>NR 17 — Sessão Aprender</title>
+  <title>NR 17 — Trilha da Ergonomia</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="question-screen.css?v=narr01">
   <style>
@@ -160,11 +160,18 @@
   }
 
   var modules = session.modules;
-  var catalog = [];
+
+  /* A abertura e o menu também são páginas numeradas, então abrem o catálogo.
+     mi/si = -1 marca que não são telas de módulo; quem navega olha o "view". */
+  var catalog = [
+    { n: 1, view: 'home', mi: -1, si: -1, mod: 0, type: 'home', title: 'Abertura', kind: 'Abertura' },
+    { n: 2, view: 'menu', mi: -1, si: -1, mod: 0, type: 'menu', title: 'Conteúdo programático', kind: 'Menu' }
+  ];
   modules.forEach(function (m, mi) {
     (m.screens || []).forEach(function (s, si) {
       catalog.push({
         n: catalog.length + 1,
+        view: 'play',
         mi: mi,
         si: si,
         mod: m.id,
@@ -399,6 +406,14 @@
     saveResume();
   }
 
+  // módulo disponível agora; 0 quando todos já foram concluídos
+  function nextModuleNumber() {
+    for (var i = 0; i < modules.length; i++) {
+      if (isUnlocked(i) && !isCompleted(i)) return modules[i].id;
+    }
+    return 0;
+  }
+
   function menuCallout() {
     var next = -1;
     for (var i = 0; i < modules.length; i++) {
@@ -466,10 +481,10 @@
     resetQuizState();
     if (qs) { qs.destroy(); qs = null; }
     setChrome(false);
-    if (window.Narration) Narration.stopSpeech();
     renderProgress();
     syncJumpUI();
     saveResume();
+    if (window.Narration) Narration.pageChanged();
   }
 
   function currentMod() { return modules[modIndex]; }
@@ -681,7 +696,7 @@
     var callout = menuCallout();
     shell.innerHTML =
       '<div class="qs-menu">' +
-        '<h1>NR 17 — Sessão Aprender</h1>' +
+        '<h1>NR 17 — Trilha da Ergonomia</h1>' +
         '<p class="qs-menu-lead">Conteúdo programático do treinamento. As atividades ficam só no final de cada módulo.</p>' +
         '<div class="qs-start-callout" role="status">' +
           '<strong>' + callout.title + '</strong>' +
@@ -713,6 +728,7 @@
     updateNav();
     syncJumpUI();
     saveResume();
+    if (window.Narration) Narration.pageChanged();
   }
 
   function openModule(i) {
@@ -734,6 +750,8 @@
   }
 
   function currentGlobalPage() {
+    if (mode === 'home') return 1;
+    if (mode === 'menu') return 2;
     if (mode !== 'play' || modIndex < 0) return 0;
     for (var i = 0; i < catalog.length; i++) {
       if (catalog[i].mi === modIndex && catalog[i].si === slideIndex) return catalog[i].n;
@@ -743,6 +761,8 @@
 
   function typeLabel(type) {
     return (
+      type === 'home' ? 'Abertura' :
+      type === 'menu' ? 'Menu' :
       type === 'cover' ? 'Capa' :
       type === 'video' ? 'Vídeo' :
       type === 'image' ? 'Foto' :
@@ -793,8 +813,20 @@
   function jumpToPage(n) {
     var item = catalog[n - 1];
     if (!item) return false;
+    if (item.view === 'home') { showHome(); return true; }
+    if (item.view === 'menu') { showMenu(); return true; }
     jumpToScreen(item.mi, item.si);
     return true;
+  }
+
+  /* Última tela de conteúdo de um módulo: quem volta para o módulo anterior
+     para aqui, e não na última pergunta do desafio. */
+  function lastContentIndex(mi) {
+    var list = (modules[mi] && modules[mi].screens) || [];
+    for (var i = list.length - 1; i >= 0; i--) {
+      if (!isScoreType(list[i].type) && list[i].type !== 'quiz-intro') return i;
+    }
+    return Math.max(0, list.length - 1);
   }
 
   function jumpToScreen(mi, si) {
@@ -827,7 +859,8 @@
     catalog.forEach(function (item) {
       if (item.mod !== lastMod) {
         lastMod = item.mod;
-        html += '<div class="qs-jump-mod">Módulo ' + item.mod + '</div>';
+        html += '<div class="qs-jump-mod">' +
+          (item.view === 'play' ? ('Módulo ' + item.mod) : 'Início') + '</div>';
       }
       html += '<button type="button" class="qs-jump-item' + (item.n === curN ? ' is-cur' : '') + '" data-jump="' + item.n + '">' +
         '<span class="qs-jump-n">' + item.n + '</span>' +
@@ -853,10 +886,10 @@
   function syncJumpUI() {
     var globalTotal = catalog.length;
     var globalN = currentGlobalPage();
-    var globalPos = (mode === 'play' && globalN) ? (globalN + ' / ' + globalTotal) : ('— / ' + globalTotal);
+    var globalPos = globalN ? (globalN + ' / ' + globalTotal) : ('— / ' + globalTotal);
     var chip = document.getElementById('pageChip');
     if (chip) {
-      chip.hidden = mode !== 'play' || !globalTotal;
+      chip.hidden = !globalTotal || !globalN;
       chip.textContent = globalN ? (globalN + ' / ' + globalTotal) : '0 / 0';
       chip.title = 'Página do treinamento (total)';
     }
@@ -891,8 +924,6 @@
     var s = current();
     if (!s) return;
     clearAutoAdvance();
-    // mudou de tela: a narração anterior não vale mais
-    if (window.Narration) Narration.stopSpeech();
     showingResult = false;
     prefetchNearbyImages(slideIndex);
     var payload = Object.assign({}, s);
@@ -966,6 +997,7 @@
     updatePtsChip();
     syncJumpUI();
     saveResume();
+    if (window.Narration) Narration.pageChanged();
   }
 
   function go(delta) {
@@ -980,7 +1012,10 @@
       return;
     }
     if (delta < 0 && slideIndex <= 0) {
-      showMenu();
+      // trilha contínua: a volta atravessa os módulos em vez de parar no menu.
+      // Só o Módulo 1 devolve para a capa de abertura.
+      if (modIndex > 0) jumpToScreen(modIndex - 1, lastContentIndex(modIndex - 1));
+      else showHome();
       return;
     }
     if (delta > 0) {
@@ -1038,7 +1073,8 @@
     if (e.target === this) closeTutorial();
   });
 
-  // narração: o botão de transcrição lê a tela em voz alta, sem abrir painel
+  /* Narração: o botão liga e desliga. Ligado, ele acompanha a navegação e
+     narra cada tela nova sozinho. */
   var btnTranscript = document.getElementById('btnTranscript');
   if (window.Narration) {
     Narration.bindNarrationEvents({
@@ -1047,18 +1083,29 @@
         return {
           mode: mode,
           screen: mode === 'play' ? current() : null,
-          page: currentGlobalPage(),
-          total: catalog.length
+          nextModule: mode === 'menu' ? nextModuleNumber() : 0
         };
       }
     });
   }
 
   btnTranscript.addEventListener('click', function () {
-    if (!window.Narration) return;
-    if (Narration.isActive()) Narration.stopSpeech();
-    else Narration.speakCurrent();
+    if (window.Narration) Narration.toggleNarration();
   });
+
+  /* O vídeo tem narração própria: quando ele começa, a nossa cala para não
+     falarem por cima. O botão continua ligado e volta a narrar na tela seguinte. */
+  function hushNarration() {
+    if (window.Narration) Narration.stopSpeech();
+  }
+  window.addEventListener('message', function (ev) {
+    var data = ev && ev.data;
+    if (data == null) return;
+    var msg = typeof data === 'object' ? (data.message || data.event || data.type || '') : data;
+    if (String(msg).toLowerCase().indexOf('panda_play') !== -1) hushNarration();
+  });
+  // 'play' não sobe na árvore, por isso a escuta na fase de captura
+  shell.addEventListener('play', hushNarration, true);
 
   var musicOn = false;
   var btnMusic = document.getElementById('btnMusic');

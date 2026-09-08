@@ -1,5 +1,5 @@
 /**
- * Conteúdo da Sessão Aprender — NR 17
+ * Conteúdo da Trilha da Ergonomia — NR 17
  * Tipos: cover | content | video | image | quiz-intro | question
  * Atividades (question) só no FINAL de cada módulo — precedidas por quiz-intro.
  *
@@ -488,7 +488,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m3-q4",
           type: "question",
           question: "A variação postural contínua deve acontecer antes de completar 2 horas na mesma postura.",
-          image: "assets/fotos/m3-p11.png",
+          image: "assets/fotos/pergunta-variacao.png",
           alternatives: [
             { id: "a", text: "Verdadeiro", correct: true },
             { id: "b", text: "Falso", correct: false }
@@ -501,7 +501,7 @@ window.QUESTION_SCREEN_SESSION = {
           id: "m3-q5",
           type: "question",
           question: "O movimento repetitivo não é considerado um risco biomecânico relevante no comércio e na logística.",
-          image: "assets/fotos/question-screen/postura.png",
+          image: "assets/fotos/m3-p11.png",
           alternatives: [
             { id: "a", text: "Verdadeiro", correct: false },
             { id: "b", text: "Falso", correct: true }

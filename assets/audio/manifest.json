@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T18:48:06.094Z",
+  "generatedAt": "2026-09-08T20:18:17.549Z",
   "items": {
     "home": {
       "file": "assets/audio/home.mp3",
@@ -7,7 +7,239 @@
     },
     "m1-cover": {
       "file": "assets/audio/m1-cover.mp3",
-      "text": "Página 1 de 53. Módulo 1, Fundamentos da Ergonomia. Como a ergonomia protege sua saúde no dia a dia da loja."
+      "text": "Módulo 1, Fundamentos da Ergonomia. Como a ergonomia protege sua saúde no dia a dia da loja."
+    },
+    "m1-reflexao": {
+      "file": "assets/audio/m1-reflexao.mp3",
+      "text": "Antes de começar. Você já pensou na sua postura hoje? O segredo está na postura correta. Ao longo deste módulo você vai entender como aplicá-la em cada função do chão de loja."
+    },
+    "menu-1": {
+      "file": "assets/audio/menu-1.mp3",
+      "text": "NR 17, Trilha da Ergonomia. Conteúdo programático do treinamento. As atividades ficam só no final de cada módulo. Módulo 1, Fundamentos da Ergonomia. Módulo 2, Movimentação Manual de Cargas. Módulo 3, Posturas e Riscos Biomecânicos. Módulo 4, Ergonomia em Áreas Administrativas. Módulo 5, Ginástica Laboral e Encerramento. Módulo 1 de 5 liberado."
+    },
+    "menu-2": {
+      "file": "assets/audio/menu-2.mp3",
+      "text": "NR 17, Trilha da Ergonomia. Conteúdo programático do treinamento. As atividades ficam só no final de cada módulo. Módulo 1, Fundamentos da Ergonomia. Módulo 2, Movimentação Manual de Cargas. Módulo 3, Posturas e Riscos Biomecânicos. Módulo 4, Ergonomia em Áreas Administrativas. Módulo 5, Ginástica Laboral e Encerramento. Módulo 2 de 5 liberado."
+    },
+    "menu-3": {
+      "file": "assets/audio/menu-3.mp3",
+      "text": "NR 17, Trilha da Ergonomia. Conteúdo programático do treinamento. As atividades ficam só no final de cada módulo. Módulo 1, Fundamentos da Ergonomia. Módulo 2, Movimentação Manual de Cargas. Módulo 3, Posturas e Riscos Biomecânicos. Módulo 4, Ergonomia em Áreas Administrativas. Módulo 5, Ginástica Laboral e Encerramento. Módulo 3 de 5 liberado."
+    },
+    "menu-4": {
+      "file": "assets/audio/menu-4.mp3",
+      "text": "NR 17, Trilha da Ergonomia. Conteúdo programático do treinamento. As atividades ficam só no final de cada módulo. Módulo 1, Fundamentos da Ergonomia. Módulo 2, Movimentação Manual de Cargas. Módulo 3, Posturas e Riscos Biomecânicos. Módulo 4, Ergonomia em Áreas Administrativas. Módulo 5, Ginástica Laboral e Encerramento. Módulo 4 de 5 liberado."
+    },
+    "menu-5": {
+      "file": "assets/audio/menu-5.mp3",
+      "text": "NR 17, Trilha da Ergonomia. Conteúdo programático do treinamento. As atividades ficam só no final de cada módulo. Módulo 1, Fundamentos da Ergonomia. Módulo 2, Movimentação Manual de Cargas. Módulo 3, Posturas e Riscos Biomecânicos. Módulo 4, Ergonomia em Áreas Administrativas. Módulo 5, Ginástica Laboral e Encerramento. Módulo 5 de 5 liberado."
+    },
+    "menu-done": {
+      "file": "assets/audio/menu-done.mp3",
+      "text": "NR 17, Trilha da Ergonomia. Conteúdo programático do treinamento. As atividades ficam só no final de cada módulo. Módulo 1, Fundamentos da Ergonomia. Módulo 2, Movimentação Manual de Cargas. Módulo 3, Posturas e Riscos Biomecânicos. Módulo 4, Ergonomia em Áreas Administrativas. Módulo 5, Ginástica Laboral e Encerramento. Treinamento concluído. Você finalizou todos os módulos."
+    },
+    "m1-v-oque": {
+      "file": "assets/audio/m1-v-oque.mp3",
+      "text": "Vídeo. O que é Ergonomia."
+    },
+    "m1-v-porque": {
+      "file": "assets/audio/m1-v-porque.mp3",
+      "text": "Vídeo. Por que a Ergonomia importa."
+    },
+    "m1-v-seg": {
+      "file": "assets/audio/m1-v-seg.mp3",
+      "text": "Vídeo. Ergonomia e Segurança do Trabalho."
+    },
+    "m1-areas": {
+      "file": "assets/audio/m1-areas.mp3",
+      "text": "As 3 áreas da Ergonomia. Física: Anatomia, fisiologia, biomecânica e antropometria. Envolve postura, movimentos repetitivos, manuseio de materiais e LER/DORT. Organizacional: Trabalho em grupo, tempo de trabalho, processos comunicativos, projetos participativos, gestão de qualidade. Cognitiva: Tomada de decisões, confiabilidade humana, estresse, carga mental, interação com a máquina. O sistema de ossos, tendões, músculos e ligamentos permite movimentos amplos e coordenação motora fina, mas com resistência pequena, por isso grandes resistências (carga e peso) devem ser feitas por máquinas e carrinhos, não pelo corpo."
+    },
+    "m1-quiz-intro": {
+      "file": "assets/audio/m1-quiz-intro.mp3",
+      "text": "Desafio NR 17, Módulo 1. Responda 4 perguntas de múltipla escolha. Você precisa acertar no mínimo 3 para avançar. Cada acerto vale até 50 pontos, quanto mais rápido, mais pontos."
+    },
+    "m1-q1": {
+      "file": "assets/audio/m1-q1.mp3",
+      "text": "Qual é a origem da palavra \"Ergonomia\"? Opção 1: Latim, \"força e lei\". Opção 2: Grego, \"ergon\" (trabalho) e \"nomos\" (lei, regra). Opção 3: Inglês, \"energy norms\". Opção 4: Não tem origem definida."
+    },
+    "m1-q2": {
+      "file": "assets/audio/m1-q2.mp3",
+      "text": "Qual das opções NÃO é uma das três áreas da ergonomia? Opção 1: Física. Opção 2: Organizacional. Opção 3: Cognitiva. Opção 4: Financeira."
+    },
+    "m1-q3": {
+      "file": "assets/audio/m1-q3.mp3",
+      "text": "Grandes resistências (carga e peso) devem ser realizadas por quê? Opção 1: Somente pela força do trabalhador. Opção 2: Por máquinas e carrinhos. Opção 3: Por qualquer colaborador disponível. Opção 4: Não há recomendação."
+    },
+    "m1-q4": {
+      "file": "assets/audio/m1-q4.mp3",
+      "text": "O que é Segurança do Trabalho, segundo o treinamento? Opção 1: Cuida da proteção e da integridade da vida do trabalhador. Opção 2: Um departamento que só existe em fábricas. Opção 3: Sinônimo exato de ergonomia, sem diferença. Opção 4: Uma norma que não se aplica ao comércio."
+    },
+    "m2-cover": {
+      "file": "assets/audio/m2-cover.mp3",
+      "text": "Módulo 2, Movimentação de Cargas. Levantar, transportar e guardar mercadorias sem prejudicar a coluna."
+    },
+    "m2-v-levantamento": {
+      "file": "assets/audio/m2-v-levantamento.mp3",
+      "text": "Vídeo principal. Levantamento correto de cargas."
+    },
+    "m2-v-biomecanica": {
+      "file": "assets/audio/m2-v-biomecanica.mp3",
+      "text": "Vídeo animação. O que acontece no corpo."
+    },
+    "m2-v-paleteira": {
+      "file": "assets/audio/m2-v-paleteira.mp3",
+      "text": "Vídeo. Transporte com paleteira manual."
+    },
+    "m2-img-numeros": {
+      "file": "assets/audio/m2-img-numeros.mp3",
+      "text": "NR 17.5, os 3 números para memorizar. 60 centímetros distância máxima de pega. 25 quilos limite para transporte sozinho. 2 horas intervalo máximo sem pausa. Não exigir nem admitir transporte manual cujo peso comprometa a saúde ou segurança; reduzir a carga para mulher e trabalhador menor. Organizar pega e depósito para evitar flexões, extensões e rotações excessivas do tronco; cargas o mais próximo possível do corpo. É vedado o levantamento quando a distância horizontal da pega for superior a 60 centímetros. Importante: Sozinho só até 25 quilos. Acima disso: duas pessoas ou equipamento, com luvas. Na imagem: Ilustração: os 3 números da NR 17.5 no estoque, 60 centímetros, 25 quilos e 2 horas."
+    },
+    "m2-img-regras": {
+      "file": "assets/audio/m2-img-regras.mp3",
+      "text": "NR 17.5, demais regras. Impulsão/tração (vagonetes, carros de mão, paleteira) também deve observar carga, frequência, pega e distância. Prevenção: meios técnicos facilitadores, peso e tamanho adequados, pausas não superiores a 2 horas. Quem faz transporte manual não eventual deve receber orientação sobre os métodos corretos. Este capítulo não se aplica a levantamento, transporte e movimentação de pessoas, só de cargas. Lembrete: Acima de 25 quilos, use duas pessoas ou equipamento, e luvas. Na imagem: Ilustração: demais regras da NR 17.5 no depósito, paleteira, pausa, orientação e só cargas."
+    },
+    "m2-img-equip": {
+      "file": "assets/audio/m2-img-equip.mp3",
+      "text": "Equipamentos de apoio da loja. Paleteira manual e carrinhos de carga. Acima de 25 quilos: duas pessoas ou equipamento, com luvas. Na imagem: Paleteira e carrinhos de carga na loja."
+    },
+    "m2-quiz-intro": {
+      "file": "assets/audio/m2-quiz-intro.mp3",
+      "text": "Desafio NR 17, Módulo 2. Responda 4 perguntas de múltipla escolha. Você precisa acertar no mínimo 3 para avançar. Cada acerto vale até 50 pontos, quanto mais rápido, mais pontos."
+    },
+    "m2-q1": {
+      "file": "assets/audio/m2-q1.mp3",
+      "text": "Colaborador levanta sozinho 18 quilos, com a pega próxima ao corpo. Liberar? Opção 1: Liberar. Opção 2: Não liberar."
+    },
+    "m2-q2": {
+      "file": "assets/audio/m2-q2.mp3",
+      "text": "Caixa de 30 quilos do estoque ao checkout. Liberar transporte sozinho? Opção 1: Liberar. Opção 2: Não liberar."
+    },
+    "m2-q3": {
+      "file": "assets/audio/m2-q3.mp3",
+      "text": "A pega está a 70 centímetros do corpo. Liberar o levantamento nessa posição? Opção 1: Liberar. Opção 2: Não liberar."
+    },
+    "m2-q4": {
+      "file": "assets/audio/m2-q4.mp3",
+      "text": "Transporte contínuo de caixas por 3 horas sem pausa. Liberar a rotina? Opção 1: Liberar. Opção 2: Não liberar."
+    },
+    "m3-cover": {
+      "file": "assets/audio/m3-cover.mp3",
+      "text": "Módulo 3, Posturas e Riscos. Limites do corpo e riscos biomecânicos da função."
+    },
+    "m3-v-pe": {
+      "file": "assets/audio/m3-v-pe.mp3",
+      "text": "Vídeo. Postura correta no posto em pé."
+    },
+    "m3-iso": {
+      "file": "assets/audio/m3-iso.mp3",
+      "text": "O que diz a ISO 11226. 4 segundos já é postura estática de trabalho. 2 horas limite antes de variar a postura. Posturas ajoelhada e agachada devem ser evitadas no abastecimento, usar sempre um suporte para sentar. Em pé: tronco sem flexão rotineira; itens frequentes no alcance normal, ocasionais no alcance máximo. Baixa estatura: pés apoiados, tronco próximo ao mobiliário, sem compressão do corpo. Na imagem: Ilustração ISO 11226: postura estática de 4 segundos, variação a cada 2 horas e zonas de alcance na loja."
+    },
+    "m3-reposicao": {
+      "file": "assets/audio/m3-reposicao.mp3",
+      "text": "Reposição baixa: certo ou errado. Correto: Use o suporte para sentar, joelhos e coluna agradecem. Evitar: Agachar por tempo prolongado sobrecarrega joelhos e coluna."
+    },
+    "m3-v-riscos": {
+      "file": "assets/audio/m3-v-riscos.mp3",
+      "text": "Vídeo. Riscos biomecânicos do dia a dia."
+    },
+    "m3-reflexao": {
+      "file": "assets/audio/m3-reflexao.mp3",
+      "text": "Uma pausa para pensar. E você, já reparou nisso na sua rotina? Movimento repetitivo, vibração e postura forçada acontecem em pequenos momentos do dia a dia, muitas vezes sem percebermos. Preste atenção na próxima tarefa que você fizer e veja se algum desses riscos aparece."
+    },
+    "m3-quiz-intro": {
+      "file": "assets/audio/m3-quiz-intro.mp3",
+      "text": "Modo Sprint, Módulo 3. Responda 5 afirmações de verdadeiro ou falso. Acerte no mínimo 4 para avançar. Cada acerto vale até 50 pontos."
+    },
+    "m3-q1": {
+      "file": "assets/audio/m3-q1.mp3",
+      "text": "Uma postura mantida por mais de 4 segundos já é considerada postura estática. Opção 1: Verdadeiro. Opção 2: Falso."
+    },
+    "m3-q2": {
+      "file": "assets/audio/m3-q2.mp3",
+      "text": "Ajoelhar ou agachar por longos períodos não é problema se a pessoa se sentir confortável. Opção 1: Verdadeiro. Opção 2: Falso."
+    },
+    "m3-q3": {
+      "file": "assets/audio/m3-q3.mp3",
+      "text": "Para pessoas de baixa estatura, os pés devem estar apoiados e sem compressão pelo mobiliário. Opção 1: Verdadeiro. Opção 2: Falso."
+    },
+    "m3-q4": {
+      "file": "assets/audio/m3-q4.mp3",
+      "text": "A variação postural contínua deve acontecer antes de completar 2 horas na mesma postura. Opção 1: Verdadeiro. Opção 2: Falso."
+    },
+    "m3-q5": {
+      "file": "assets/audio/m3-q5.mp3",
+      "text": "O movimento repetitivo não é considerado um risco biomecânico relevante no comércio e na logística. Opção 1: Verdadeiro. Opção 2: Falso."
+    },
+    "m4-cover": {
+      "file": "assets/audio/m4-cover.mp3",
+      "text": "Módulo 4, Áreas Administrativas. Ajustes simples no posto evitam horas de desconforto."
+    },
+    "m4-v-monitor": {
+      "file": "assets/audio/m4-v-monitor.mp3",
+      "text": "Vídeo 1 de 3. Posicionamento do monitor."
+    },
+    "m4-v-olhos": {
+      "file": "assets/audio/m4-v-olhos.mp3",
+      "text": "Vídeo 2 de 3. Cuidado com os olhos e pausas visuais."
+    },
+    "m4-v-temp": {
+      "file": "assets/audio/m4-v-temp.mp3",
+      "text": "Vídeo 3 de 3. Temperatura ideal do posto."
+    },
+    "m4-reflexao": {
+      "file": "assets/audio/m4-reflexao.mp3",
+      "text": "Uma pausa para pensar. Quando foi a última vez que você ajustou a posição do seu monitor? Um ajuste de poucos segundos evita horas de desconforto no fim do dia."
+    },
+    "m4-dicas": {
+      "file": "assets/audio/m4-dicas.mp3",
+      "text": "Dicas rápidas do posto administrativo. Elimine reflexos: janelas paralelas ao monitor, nunca à frente ou atrás. Olhar muito tempo para a tela reduz o piscar e causa olhos secos, pisque com frequência. Na pausa, evite o computador e olhe para o horizonte, a mais de 6 metros de distância. Temperatura de conforto: 18 a 25 °C, a saída do ar-condicionado não deve incidir direto sobre o colaborador. Se não for possível redirecionar o ar, reposicione o posto de trabalho."
+    },
+    "m4-quiz-intro": {
+      "file": "assets/audio/m4-quiz-intro.mp3",
+      "text": "Ordene a Rotina, Módulo 4. Toque nos 3 cuidados do posto administrativo na ordem que faz mais sentido seguir no seu turno. Você tem 22 segundos. Até 50 pontos se acertar rápido."
+    },
+    "m4-order": {
+      "file": "assets/audio/m4-order.mp3",
+      "text": "Ordene a rotina. Toque nos cuidados na ordem que você seguiria."
+    },
+    "m5-cover": {
+      "file": "assets/audio/m5-cover.mp3",
+      "text": "Módulo 5, Ginástica Laboral. Alongamentos simples para antes, durante e depois do turno."
+    },
+    "m5-v-maos": {
+      "file": "assets/audio/m5-v-maos.mp3",
+      "text": "Vídeo. Alongamento: mãos, dedos e punhos."
+    },
+    "m5-v-bracos": {
+      "file": "assets/audio/m5-v-bracos.mp3",
+      "text": "Vídeo. Alongamento: antebraços e braços."
+    },
+    "m5-v-pescoco": {
+      "file": "assets/audio/m5-v-pescoco.mp3",
+      "text": "Vídeo. Cabeça, pescoço, ombros e tronco."
+    },
+    "m5-ficha": {
+      "file": "assets/audio/m5-ficha.mp3",
+      "text": "Ficha de consulta, sequência de alongamento. Mãos: fechar contra o pulso e abrir, 3 vezes. Dedos: entrelaçar e ondular / girar polegares / estender alternado, 3 vezes cada. Antebraço: puxar palma para fora, 20 segundos cada lado, 3 vezes. Punhos: unir palmas no peito e afastar / girar nos dois sentidos. Braços: cotovelo atrás da cabeça, 20 segundos cada lado, 3 vezes. Braços (atrás do corpo): dedos entrelaçados, afastar do corpo, 20 segundos, 3 vezes. Braços (acima da cabeça): dedos entrelaçados, palmas para cima, 20 segundos. Cabeça/pescoço: sim/não e inclinação lateral, 20 segundos cada lado, 3 vezes (evitar levar a cabeça para trás). Ombros: elevar ao inspirar / girar frente-trás, 3 vezes cada sentido. Tronco: braço sobre a cabeça, inclinação lateral, 20 segundos cada lado, 3 vezes."
+    },
+    "m5-v-final": {
+      "file": "assets/audio/m5-v-final.mp3",
+      "text": "Vídeo. Efeitos da má postura e mensagem final."
+    },
+    "m5-quiz-intro": {
+      "file": "assets/audio/m5-quiz-intro.mp3",
+      "text": "Desafio NR 17, Módulo 5. Associe cada exercício à região do corpo que ele alonga. São 8 pares, clique em um exercício e depois na região correspondente. Até 50 pontos conforme a rapidez."
+    },
+    "m5-match": {
+      "file": "assets/audio/m5-match.mp3",
+      "text": "Associe o exercício à região."
+    },
+    "m5-reflexao": {
+      "file": "assets/audio/m5-reflexao.mp3",
+      "text": "Antes de encerrar. Quando você vai praticar esses alongamentos? Não se esqueça de pensar neste assunto todos os dias. Cuidar da sua postura hoje é evitar dores e afastamentos amanhã, pequenos ajustes, repetidos todos os dias, fazem toda a diferença."
+    },
+    "m5-done": {
+      "file": "assets/audio/m5-done.mp3",
+      "text": "Certificado de conclusão. Parabéns. Você concluiu o treinamento NR 17, Ergonomia no Comércio e na Logística. Por mérito, dedicação e compromisso com a ergonomia, você percorreu os módulos disponíveis."
     }
   }
 }

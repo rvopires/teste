@@ -51,7 +51,6 @@
 .qs-app.is-home .qs-brand,
 .qs-app.is-home .qs-progress,
 .qs-app.is-home .qs-pts,
-.qs-app.is-home .qs-page-chip,
 .qs-app.is-home .qs-sim-btn { display: none !important; }
 .qs-app.is-home .qs-tools { pointer-events: auto; }
 

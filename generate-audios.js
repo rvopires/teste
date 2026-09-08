@@ -41,8 +41,8 @@ const AUDIO_DIR = path.join(__dirname, 'assets', 'audio');
 const MANIFEST_FILE = path.join(AUDIO_DIR, 'manifest.json');
 const DATA_FILE = path.join(__dirname, 'question-screen-data.js');
 
-// telas geradas por padrão; deixe null para gerar o curso inteiro
-const DEFAULT_PAGES = ['home', 'm1-cover'];
+// telas geradas por padrão; null = o curso inteiro
+const DEFAULT_PAGES = null;
 
 /* ── Carrega o conteúdo do curso ─────────────────────────────────────── */
 
@@ -60,14 +60,19 @@ function loadSession() {
 // { chave -> texto } de todas as telas narráveis
 function buildTexts(session) {
   const catalog = T.buildCatalog(session);
-  const total = catalog.length;
   const texts = new Map();
 
   texts.set(T.HOME_KEY, T.buildHomeText());
+
+  // menu: uma gravação por módulo liberado, mais a de treinamento concluído
+  const mods = session.modules || [];
+  for (const m of mods) texts.set(T.menuAudioKey(m.id), T.buildMenuText(session, m.id));
+  texts.set(T.menuAudioKey(0), T.buildMenuText(session, 0));
+
   for (const item of catalog) {
     const id = item.screen && item.screen.id;
     if (!id) continue;
-    const text = T.buildScreenText(item.screen, item.n, total);
+    const text = T.buildScreenText(item.screen);
     if (text) texts.set(id, text);
   }
   return texts;
