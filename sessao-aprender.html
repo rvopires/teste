@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Sessão Aprender</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=photofb15">
+  <link rel="stylesheet" href="question-screen.css?v=narr01">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -73,8 +73,25 @@
           <span class="qs-label" id="simLabel">Simulação: OFF</span>
         </button>
         <button type="button" id="btnJump" class="qs-sim-btn" title="Mapa de páginas" hidden>Mapa</button>
-        <button type="button" id="btnMusic" title="Música" aria-pressed="false">🔇</button>
-        <button type="button" id="btnTranscript" title="Transcrição">Aa</button>
+        <button type="button" id="btnMusic" class="qs-tool-btn" title="Música" aria-pressed="false">
+          <span class="qs-tool-disc">
+            <svg class="qs-tool-ico ico-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+            </svg>
+            <svg class="qs-tool-ico ico-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            </svg>
+          </span>
+          <span class="qs-tool-label">Música</span>
+        </button>
+        <button type="button" id="btnTranscript" class="qs-tool-btn" title="Transcrição">
+          <span class="qs-tool-disc">
+            <svg class="qs-tool-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 11v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>
+            </svg>
+          </span>
+          <span class="qs-tool-label">Transcrição</span>
+        </button>
       </div>
     </header>
 
@@ -96,14 +113,6 @@
       </svg>
     </div>
   </div>
-
-  <aside class="qs-transcript" id="transcript">
-    <header>
-      <span>Transcrição</span>
-      <button type="button" id="btnCloseTranscript" aria-label="Fechar">×</button>
-    </header>
-    <div class="body" id="transcriptBody"></div>
-  </aside>
 
   <!-- Modal Tutorial -->
   <div class="qs-tut-overlay" id="tutorialModal" hidden>
@@ -138,8 +147,10 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=photofb15"></script>
-  <script src="question-screen.js?v=photofb15"></script>
+  <script src="question-screen-data.js?v=narr01"></script>
+  <script src="question-screen.js?v=narr01"></script>
+  <script src="narration-text.js?v=narr01"></script>
+  <script src="narration.js?v=narr01"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -203,6 +214,10 @@
   }
   function isGateType(type) {
     return isScoreType(type) || type === 'reflect' || type === 'compare';
+  }
+  // vídeo com player: só libera o avanço faltando ~8s para o fim
+  function isVideoGate(s) {
+    return !!(s && s.type === 'video' && (s.embed || s.panda || s.video));
   }
   function isQuizStep(s) {
     return !!(s && isScoreType(s.type));
@@ -365,8 +380,6 @@
 
   var demoMode = false;
   try { demoMode = sessionStorage.getItem('nr17-demoMode') === '1'; } catch (err) {}
-  var demoBtnVisible = false;
-  try { demoBtnVisible = sessionStorage.getItem('nr17-demoBtnVisible') === '1'; } catch (err) {}
 
   function isUnlocked(i) {
     if (demoMode) return true;
@@ -427,8 +440,6 @@
   var btnBack = document.getElementById('btnBack');
   var btnFwd = document.getElementById('btnFwd');
   var brandTxt = null;
-  var transcript = document.getElementById('transcript');
-  var transcriptBody = document.getElementById('transcriptBody');
   var bgMusic = document.getElementById('bg-music');
 
   if (brandTxt) brandTxt.textContent = (session.meta && session.meta.title) || 'NR 17';
@@ -440,7 +451,8 @@
   var sessionWave = document.getElementById('sessionWave');
 
   function setChrome(visible) {
-    if (topBar) topBar.hidden = !visible;
+    // a barra fica sempre no DOM: na abertura o CSS deixa só as ferramentas
+    if (topBar) topBar.hidden = false;
     if (stage) stage.hidden = !visible;
     if (home) home.hidden = visible;
     if (sessionWave) sessionWave.hidden = !visible;
@@ -454,7 +466,7 @@
     resetQuizState();
     if (qs) { qs.destroy(); qs = null; }
     setChrome(false);
-    transcript.classList.remove('open');
+    if (window.Narration) Narration.stopSpeech();
     renderProgress();
     syncJumpUI();
     saveResume();
@@ -494,6 +506,7 @@
     if (!s) return false;
     if (s.type === 'question') return !!answered[s.id];
     if (isGateType(s.type)) return !!answered[s.id];
+    if (isVideoGate(s)) return !!answered[s.id];
     return true;
   }
 
@@ -517,14 +530,24 @@
     btnFwd.disabled = showingResult ? !quizState.passed : !canForward();
   }
 
-  function showTranscript() {
-    if (mode !== 'play') {
-      var tip = menuCallout();
-      transcriptBody.textContent = tip.title + ' ' + tip.body;
-      return;
+  // temas das questões erradas, para orientar o que estudar antes de tentar de novo
+  function buildReviewList() {
+    var list = screens();
+    var out = [];
+    var seen = {};
+    if (quizState.introIndex < 0) return out;
+    for (var i = quizState.introIndex + 1; i < list.length; i++) {
+      var s = list[i];
+      if (!isScoreType(s.type)) break;
+      if (s.opinion) continue;
+      var ans = sessionAnswers[s.id];
+      if (ans && ans.correct) continue;
+      var topic = s.review || s.question || s.title || '';
+      if (!topic || seen[topic]) continue;
+      seen[topic] = true;
+      out.push(topic);
     }
-    var s = current();
-    transcriptBody.textContent = (s && (s.transcript || s.explanation || s.body || s.subtitle || s.question || s.title)) || '';
+    return out;
   }
 
   function showQuizResult() {
@@ -562,7 +585,8 @@
       medalRank: faceRank,
       icon: faceIcon,
       title: quizState.passed ? 'Desafio concluído!' : 'Desafio não concluído',
-      titleUnlock: titleUnlock
+      titleUnlock: titleUnlock,
+      review: quizState.passed ? [] : buildReviewList()
     }, {
       onContinue: handleContinue
     });
@@ -573,10 +597,6 @@
     if (quizState.passed) {
       try { if (typeof playBeep === 'function') playBeep('end'); } catch (e) {}
     }
-    transcriptBody.textContent = quizState.passed
-      ? ('Aprovado: ' + hits + ' de ' + total + '. ' + quizState.points + ' pontos.' +
-        (titleUnlock ? (' Título conquistado: ' + titleUnlock.title + '.') : ''))
-      : ('Não aprovado: ' + hits + ' de ' + total + '. Mínimo: ' + min + '.');
     saveResume();
   }
 
@@ -691,7 +711,6 @@
       '</div>';
     renderProgress();
     updateNav();
-    showTranscript();
     syncJumpUI();
     saveResume();
   }
@@ -846,7 +865,7 @@
     var fab = document.getElementById('simFab');
     var btnJump = document.getElementById('btnJump');
     if (fab) fab.hidden = !demoMode;
-    if (btnJump) btnJump.hidden = !demoMode || !demoBtnVisible;
+    if (btnJump) btnJump.hidden = !demoMode;
     if (jumpOpen && demoMode) renderJumpList();
     else if (!demoMode) setJumpOpen(false);
   }
@@ -872,6 +891,8 @@
     var s = current();
     if (!s) return;
     clearAutoAdvance();
+    // mudou de tela: a narração anterior não vale mais
+    if (window.Narration) Narration.stopSpeech();
     showingResult = false;
     prefetchNearbyImages(slideIndex);
     var payload = Object.assign({}, s);
@@ -938,12 +959,11 @@
       onContinue: handleContinue
     });
 
-    if (!isGateType(s.type)) answered[s.id] = true;
+    if (!isGateType(s.type) && !isVideoGate(s)) answered[s.id] = true;
     if (s.type === 'finale') completeCurrentModule();
     renderProgress();
     updateNav();
     updatePtsChip();
-    showTranscript();
     syncJumpUI();
     saveResume();
   }
@@ -1018,14 +1038,26 @@
     if (e.target === this) closeTutorial();
   });
 
-  document.getElementById('btnTranscript').addEventListener('click', function () {
-    transcript.classList.toggle('open');
-    this.classList.toggle('is-on', transcript.classList.contains('open'));
-    showTranscript();
-  });
-  document.getElementById('btnCloseTranscript').addEventListener('click', function () {
-    transcript.classList.remove('open');
-    document.getElementById('btnTranscript').classList.remove('is-on');
+  // narração: o botão de transcrição lê a tela em voz alta, sem abrir painel
+  var btnTranscript = document.getElementById('btnTranscript');
+  if (window.Narration) {
+    Narration.bindNarrationEvents({
+      button: btnTranscript,
+      getState: function () {
+        return {
+          mode: mode,
+          screen: mode === 'play' ? current() : null,
+          page: currentGlobalPage(),
+          total: catalog.length
+        };
+      }
+    });
+  }
+
+  btnTranscript.addEventListener('click', function () {
+    if (!window.Narration) return;
+    if (Narration.isActive()) Narration.stopSpeech();
+    else Narration.speakCurrent();
   });
 
   var musicOn = false;
@@ -1034,7 +1066,6 @@
     musicOn = !musicOn;
     btnMusic.classList.toggle('is-on', musicOn);
     btnMusic.setAttribute('aria-pressed', musicOn ? 'true' : 'false');
-    btnMusic.textContent = musicOn ? '🔊' : '🔇';
     if (musicOn && bgMusic) bgMusic.play().catch(function () {});
     else if (bgMusic) bgMusic.pause();
   });
@@ -1062,7 +1093,8 @@
     var btn = document.getElementById('btnMode');
     var label = document.getElementById('simLabel');
     if (btn) {
-      btn.hidden = !demoBtnVisible;
+      // só aparece com o modo simulação ligado (pelo atalho); desligar esconde de novo
+      btn.hidden = !demoMode;
       btn.classList.toggle('is-on', !!demoMode);
       btn.setAttribute('aria-pressed', demoMode ? 'true' : 'false');
     }
@@ -1086,10 +1118,9 @@
 
   function toggleDemoMode() {
     demoMode = !demoMode;
-    demoBtnVisible = true;
     try {
       sessionStorage.setItem('nr17-demoMode', demoMode ? '1' : '0');
-      sessionStorage.setItem('nr17-demoBtnVisible', '1');
+      sessionStorage.removeItem('nr17-demoBtnVisible');
     } catch (err) {}
     applyDemoUI();
     showSimToast(demoMode);
@@ -1137,6 +1168,18 @@
       toggleDemoMode();
     });
   })();
+
+  /* Recarregar forçado (Ctrl+F5, Shift+F5, Ctrl+Shift+R) ignora o cache, mas o
+     navegador mantém o localStorage. Zeramos aqui, antes de o reload acontecer.
+     F5 sozinho continua retomando de onde parou. */
+  window.addEventListener('keydown', function (e) {
+    var key = e.key || '';
+    var hard = (key === 'F5' && (e.ctrlKey || e.shiftKey)) ||
+      (key.toLowerCase() === 'r' && e.shiftKey && (e.ctrlKey || e.metaKey));
+    if (!hard) return;
+    try { localStorage.removeItem(RESUME_KEY); } catch (err) {}
+    try { sessionStorage.removeItem('nr17-demoMode'); } catch (err) {}
+  });
 
   applyDemoUI();
   if (demoMode) setJumpOpen(true);

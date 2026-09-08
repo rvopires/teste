@@ -112,6 +112,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "d", text: "Não tem origem definida", correct: false }
           ],
           explanation: "Ergonomia vem do grego: ergon (trabalho) + nomos (lei/regra).",
+          review: "A origem e o significado da palavra Ergonomia",
           transcript: "Atividade final do módulo 1 — pergunta 1."
         },
         {
@@ -126,6 +127,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "d", text: "Financeira", correct: true }
           ],
           explanation: "As três áreas são física, organizacional e cognitiva.",
+          review: "Quais são as 3 áreas da Ergonomia",
           transcript: "Pergunta 2 do módulo 1."
         },
         {
@@ -140,6 +142,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "d", text: "Não há recomendação", correct: false }
           ],
           explanation: "Use máquinas e carrinhos — o corpo não é feito para grandes cargas contínuas.",
+          review: "Quem deve assumir as grandes cargas e resistências",
           transcript: "Pergunta 3 do módulo 1."
         },
         {
@@ -154,6 +157,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "d", text: "Uma norma que não se aplica ao comércio", correct: false }
           ],
           explanation: "Segurança do Trabalho protege a vida e a integridade do trabalhador.",
+          review: "O conceito de Segurança do Trabalho",
           transcript: "Pergunta 4 — fim do módulo 1."
         }
       ]
@@ -296,6 +300,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "b", text: "Não liberar", correct: false }
           ],
           explanation: "18 kg está abaixo de 25 kg e a pega está correta — pode liberar.",
+          review: "O limite de peso para transportar sozinho (NR 17.5)",
           transcript: "Cenário 1 do módulo 2."
         },
         {
@@ -308,6 +313,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "b", text: "Não liberar", correct: true }
           ],
           explanation: "Acima de 25 kg exige duas pessoas ou equipamento.",
+          review: "O limite de peso para transportar sozinho (NR 17.5)",
           transcript: "Cenário 2 do módulo 2."
         },
         {
@@ -320,6 +326,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "b", text: "Não liberar", correct: true }
           ],
           explanation: "É vedado acima de 60 cm — reorganize o local de pega.",
+          review: "A distância máxima de pega em relação ao corpo",
           transcript: "Cenário 3 do módulo 2."
         },
         {
@@ -332,6 +339,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "b", text: "Não liberar", correct: true }
           ],
           explanation: "O limite é pausa a cada 2 horas de movimentação contínua.",
+          review: "De quanto em quanto tempo a pausa é obrigatória",
           transcript: "Cenário 4 — fim do módulo 2."
         }
       ]
@@ -447,6 +455,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "b", text: "Falso", correct: false }
           ],
           explanation: "Sim — a partir de cerca de 4 segundos a postura é estática.",
+          review: "A partir de quando uma postura é considerada estática",
           transcript: "V/F 1 do módulo 3."
         },
         {
@@ -459,6 +468,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "b", text: "Falso", correct: true }
           ],
           explanation: "Falso — use assento/suporte.",
+          review: "Ajoelhar e agachar por longos períodos: o que a norma orienta",
           transcript: "V/F 2 do módulo 3."
         },
         {
@@ -471,6 +481,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "b", text: "Falso", correct: false }
           ],
           explanation: "Verdadeiro — pés apoiados e sem compressão.",
+          review: "Apoio dos pés e mobiliário para pessoas de baixa estatura",
           transcript: "V/F 3 do módulo 3."
         },
         {
@@ -483,6 +494,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "b", text: "Falso", correct: false }
           ],
           explanation: "Verdadeiro — varie antes de 2 horas contínuas.",
+          review: "Em quanto tempo a postura precisa ser variada",
           transcript: "V/F 4 do módulo 3."
         },
         {
@@ -495,6 +507,7 @@ window.QUESTION_SCREEN_SESSION = {
             { id: "b", text: "Falso", correct: true }
           ],
           explanation: "Falso — é um dos três grandes riscos biomecânicos.",
+          review: "Quais são os três riscos biomecânicos do dia a dia",
           transcript: "V/F 5 — fim do módulo 3."
         }
       ]
@@ -603,6 +616,7 @@ window.QUESTION_SCREEN_SESSION = {
             { key: "olhos", text: "Piscar os olhos e olhar um ponto distante nas pausas", rank: 1 },
             { key: "temperatura", text: "Verificar se o ar-condicionado não bate direto em você", rank: 2 }
           ],
+          review: "A ordem dos cuidados no posto administrativo",
           transcript: "Ordene os 3 cuidados do posto administrativo."
         }
       ]
@@ -717,6 +731,7 @@ window.QUESTION_SCREEN_SESSION = {
             { ex: "Movimento de \"sim\" e \"não\" com a cabeça", body: "Pescoço" },
             { ex: "Braço sobre a cabeça, inclinando lateralmente", body: "Tronco" }
           ],
+          review: "Qual região do corpo cada exercício de alongamento trabalha",
           transcript: "Jogo: associe 8 exercícios às regiões do corpo."
         },
         {

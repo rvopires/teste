@@ -21,6 +21,31 @@
 (function (global) {
   'use strict';
 
+  /* Vídeo: não pode pular nada e o avanço libera faltando 8s */
+  var VIDEO_UNLOCK_MARGIN = 8;
+  var VIDEO_SEEK_TOLERANCE = 0.15;
+  var VIDEO_TICK_TOLERANCE = 0.55;
+
+  // "0:45", "1:20:05" ou "até 1:30" -> segundos (fallback se o player não informar a duração)
+  function parseClock(txt) {
+    var m = String(txt || '').match(/(?:(\d+):)?(\d{1,2}):(\d{2})/);
+    if (!m) return 0;
+    if (m[1] != null) return (Number(m[1]) * 3600) + (Number(m[2]) * 60) + Number(m[3]);
+    return (Number(m[2]) * 60) + Number(m[3]);
+  }
+
+  function fmtClock(secs) {
+    var s = Math.max(0, Math.round(secs));
+    var m = Math.floor(s / 60);
+    var r = s % 60;
+    return m + ':' + (r < 10 ? '0' : '') + r;
+  }
+
+  function unlockThreshold(duration) {
+    if (!(duration > 0)) return Infinity;
+    return duration > VIDEO_UNLOCK_MARGIN ? duration - VIDEO_UNLOCK_MARGIN : duration * 0.85;
+  }
+
   var sfxCtx = null;
   function ensureSfx() {
     var AC = window.AudioContext || window.webkitAudioContext;
@@ -160,14 +185,23 @@
     return `<div class="qs-media-fallback" aria-hidden="true">${esc(data.icon || '📘')}</div>`;
   }
 
+  function pandaSrc(src) {
+    var out = String(src || '');
+    if (!out) return out;
+    var sep = out.indexOf('?') === -1 ? '?' : '&';
+    if (out.indexOf('saveProgress=') === -1) { out += sep + 'saveProgress=false'; sep = '&'; }
+    if (out.indexOf('disableForward=') === -1) out += sep + 'disableForward=true';
+    return out;
+  }
+
   function playerHTML(data) {
     if (data.embed || data.panda) {
-      var src = data.embed || data.panda;
+      var src = pandaSrc(data.embed || data.panda);
       var id = data.playerId || ('panda-' + Math.random().toString(36).slice(2, 10));
       return `<iframe id="${esc(id)}" class="qs-player qs-embed" data-qs-panda="1" src="${esc(src)}" title="${esc(data.title || 'Vídeo')}" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture" allowfullscreen fetchpriority="high"></iframe>`;
     }
     if (data.video) {
-      return `<video class="qs-player" controls playsinline preload="metadata" poster="${esc(data.poster || data.image || '')}" src="${esc(data.video)}"></video>`;
+      return `<video class="qs-player" controls playsinline preload="metadata" controlsList="nodownload noplaybackrate" disablepictureinpicture poster="${esc(data.poster || data.image || '')}" src="${esc(data.video)}"></video>`;
     }
     var yt = youtubeId(data.youtube);
     if (yt) {
@@ -183,8 +217,12 @@
       badge = data.duration ? `Vídeo · ${esc(data.duration)}` : 'Vídeo';
     }
 
+    var lock = (data.embed || data.panda || data.video)
+      ? `<p class="qs-video-lock" data-qs-video-lock role="status">🔒 Assista o vídeo para liberar o avanço</p>`
+      : '';
+
     var stage = live
-      ? `<div class="qs-video-stage">${live}</div>`
+      ? `<div class="qs-video-stage">${live}${lock}</div>`
       : `<div class="qs-video-ph">
           <span class="qs-vbadge">${badge}</span>
           <div class="qs-vicon" aria-hidden="true">▶</div>
@@ -505,6 +543,19 @@
     var actions = passed
       ? `<button type="button" class="qs-quiz-intro-btn" data-qs-finish>Continuar</button>`
       : `<button type="button" class="qs-quiz-intro-btn" data-qs-retry>Jogar novamente</button>`;
+
+    // reprovado: mostra os temas das questões erradas (sem entregar as respostas)
+    var topics = (!passed && Array.isArray(data.review)) ? data.review.filter(Boolean) : [];
+    var reviewBlock = topics.length
+      ? `<section class="qs-review">
+          <p class="qs-review-head">O que revisar antes de tentar de novo</p>
+          <ul class="qs-review-list">
+            ${topics.map(function (t) {
+              return `<li class="qs-review-item"><span class="qs-review-dot" aria-hidden="true"></span><span>${esc(t)}</span></li>`;
+            }).join('')}
+          </ul>
+        </section>`
+      : '';
     var scoreBar = `<div class="qs-result-scorebar" aria-label="Placar">
         <span><b>${points}</b> pts</span>
         <span class="qs-result-scorebar-dot" aria-hidden="true"></span>
@@ -531,7 +582,7 @@
 
     return `
       <article class="qs-screen is-quiz-result" data-qs-root data-type="quiz-result">
-        <div class="qs-quiz-result ${passed ? 'is-pass' : 'is-fail'} medal-${esc(rank)}">
+        <div class="qs-quiz-result ${passed ? 'is-pass' : 'is-fail'}${topics.length ? ' has-review' : ''} medal-${esc(rank)}">
           <div class="qs-medal" aria-hidden="true">
             <span class="qs-medal-face">${esc(medal)}</span>
           </div>
@@ -539,6 +590,7 @@
           <h2 class="qs-quiz-result-title">${esc(title)}</h2>
           ${scoreBar}
           <p class="qs-quiz-result-desc">${desc}</p>
+          ${reviewBlock}
           <div class="qs-quiz-result-actions">${actions}</div>
         </div>
       </article>`;
@@ -616,7 +668,8 @@
     this.el.removeEventListener('click', this._onClick);
     this.el.addEventListener('click', this._onClick);
 
-    var gated = type === 'question' || type === 'order' || type === 'match' || type === 'reflect' || type === 'compare';
+    var lockedVideo = type === 'video' && !!(this.data.embed || this.data.panda || this.data.video);
+    var gated = type === 'question' || type === 'order' || type === 'match' || type === 'reflect' || type === 'compare' || lockedVideo;
     if (!gated) this.state.answered = true;
 
     if (type === 'video' && (this.data.embed || this.data.panda || this.data.youtube || this.data.video)) {
@@ -678,6 +731,30 @@
     if (root) root.classList.toggle('is-playing', !!on);
   };
 
+  QuestionScreen.prototype._paintVideoLock = function () {
+    var chip = this.el.querySelector('[data-qs-video-lock]');
+    if (!chip) return;
+    var g = this._videoGuard;
+    if (this._videoUnlocked) {
+      chip.classList.add('is-free');
+      chip.textContent = '✔ Liberado — pode avançar';
+      return;
+    }
+    chip.classList.remove('is-free');
+    if (g && g.duration > 0) {
+      chip.textContent = '🔒 Libera em ' + fmtClock(unlockThreshold(g.duration) - g.maxWatched);
+    } else {
+      chip.textContent = '🔒 Assista o vídeo para liberar o avanço';
+    }
+  };
+
+  QuestionScreen.prototype._unlockVideo = function () {
+    if (this._videoUnlocked) return;
+    this._videoUnlocked = true;
+    this._paintVideoLock();
+    this._complete({ kind: 'video' });
+  };
+
   QuestionScreen.prototype._bindVideoTags = function () {
     var self = this;
     var root = this.el;
@@ -687,52 +764,156 @@
     function expand() { self._setVideoPlaying(true); }
     function collapse() { self._setVideoPlaying(false); }
 
+    var guard = {
+      maxWatched: 0,
+      duration: parseClock(this.data.duration),
+      seekingBack: false,
+      isSeeking: false,
+      lastWall: 0,
+      seekTimer: null,
+      backTimer: null
+    };
+    this._videoGuard = guard;
+    this._videoUnlocked = false;
+    this._paintVideoLock();
+
+    function snapBack() {
+      if (self._videoUnlocked) return;
+      guard.seekingBack = true;
+      var target = Math.max(0, guard.maxWatched);
+      try {
+        if (self._pandaPlayer && self._pandaPlayer.setCurrentTime) self._pandaPlayer.setCurrentTime(target);
+      } catch (e) {}
+      try {
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({ type: 'currentTime', parameter: target }, '*');
+        }
+      } catch (e) {}
+      if (native) { try { native.currentTime = target; } catch (e) {} }
+      clearTimeout(guard.backTimer);
+      guard.backTimer = setTimeout(function () {
+        guard.seekingBack = false;
+        guard.lastWall = Date.now();
+      }, 350);
+    }
+
+    function handleSeek(t) {
+      if (self._videoUnlocked) return;
+      guard.isSeeking = true;
+      if (typeof t === 'number' && !isNaN(t) && t > guard.maxWatched + VIDEO_SEEK_TOLERANCE) snapBack();
+      clearTimeout(guard.seekTimer);
+      guard.seekTimer = setTimeout(function () {
+        guard.isSeeking = false;
+        guard.lastWall = Date.now();
+      }, 280);
+    }
+
+    function handleTime(t, dur) {
+      if (typeof dur === 'number' && dur > 0) guard.duration = dur;
+      if (typeof t !== 'number' || isNaN(t)) return;
+      if (self._videoUnlocked || guard.seekingBack) return;
+      if (guard.isSeeking) {
+        if (t > guard.maxWatched + VIDEO_SEEK_TOLERANCE) snapBack();
+        return;
+      }
+      var now = Date.now();
+      var wallDt = guard.lastWall ? Math.max(0, (now - guard.lastWall) / 1000) : 0.25;
+      guard.lastWall = now;
+      // só cresce no ritmo real de reprodução: seek disfarçado estoura a folga
+      var allowed = guard.maxWatched + Math.min(VIDEO_TICK_TOLERANCE, wallDt * 1.4 + 0.12);
+      if (t > allowed) { snapBack(); return; }
+      if (t > guard.maxWatched) guard.maxWatched = t;
+      if (guard.maxWatched >= unlockThreshold(guard.duration)) self._unlockVideo();
+      else self._paintVideoLock();
+    }
+
+    this._videoOnTime = handleTime;
+    this._videoOnSeek = handleSeek;
+
     if (native) {
       native.addEventListener('play', expand);
       native.addEventListener('pause', collapse);
-      native.addEventListener('ended', collapse);
+      native.addEventListener('ended', function () { collapse(); self._unlockVideo(); });
+      native.addEventListener('loadedmetadata', function () { handleTime(0, native.duration); });
+      native.addEventListener('seeking', function () { handleSeek(native.currentTime); });
+      native.addEventListener('seeked', function () { handleSeek(native.currentTime); });
+      native.addEventListener('timeupdate', function () { handleTime(native.currentTime, native.duration); });
     }
+
+    var videoId = (String(this.data.embed || this.data.panda || '').match(/[?&]v=([0-9a-f-]{36})/i) || [])[1] || '';
 
     this._onVideoMsg = function (ev) {
       var data = ev && ev.data;
       if (data == null) return;
       var msg = '';
+      var payload = null;
       if (typeof data === 'object') {
+        payload = data;
         msg = data.message || data.event || data.type || '';
       } else if (typeof data === 'string') {
         msg = data;
         try {
           var parsed = JSON.parse(data);
+          payload = parsed;
           msg = parsed.message || parsed.event || parsed.type || data;
         } catch (e) {}
       }
       msg = String(msg).toLowerCase();
-      if (msg === 'panda_play' || msg.indexOf('panda_play') !== -1) expand();
-      if (msg === 'panda_pause' || msg.indexOf('panda_pause') !== -1) collapse();
-      if (msg === 'panda_ended' || msg.indexOf('panda_ended') !== -1 || msg.indexOf('panda_complete') !== -1) collapse();
+      if (payload && payload.video && videoId && String(payload.video) !== videoId) return;
+
+      var t = payload && typeof payload.currentTime === 'number' ? payload.currentTime : null;
+      var dur = payload && typeof payload.duration === 'number' ? payload.duration : null;
+
+      if (msg.indexOf('panda_play') !== -1) { expand(); guard.lastWall = Date.now(); }
+      if (msg.indexOf('panda_pause') !== -1) collapse();
+      if (msg.indexOf('panda_ended') !== -1 || msg.indexOf('panda_complete') !== -1) {
+        collapse();
+        self._unlockVideo();
+        return;
+      }
+      if (msg.indexOf('panda_seeking') !== -1 || msg.indexOf('panda_seeked') !== -1) {
+        handleSeek(t);
+        return;
+      }
+      if (msg.indexOf('panda_timeupdate') !== -1) handleTime(t, dur);
     };
     window.addEventListener('message', this._onVideoMsg);
 
     if (iframe && iframe.id) {
-      this._ensurePandaApi(iframe.id, expand, collapse);
+      this._ensurePandaApi(iframe.id, function (player) {
+        self._pandaPlayer = player;
+        try {
+          var d = player.getDuration && player.getDuration();
+          if (typeof d === 'number' && d > 0) guard.duration = d;
+        } catch (e) {}
+        guard.lastWall = Date.now();
+        self._paintVideoLock();
+        try {
+          player.onEvent(function (e) {
+            var msg = e && e.message;
+            var t = e && typeof e.currentTime === 'number' ? e.currentTime : null;
+            if (msg === 'panda_play') { expand(); guard.lastWall = Date.now(); }
+            if (msg === 'panda_pause') collapse();
+            if (msg === 'panda_ended') { collapse(); self._unlockVideo(); return; }
+            if (msg === 'panda_seeking' || msg === 'panda_seeked') { handleSeek(t); return; }
+            if (msg === 'panda_timeupdate') {
+              var dd = 0;
+              try { dd = player.getDuration && player.getDuration(); } catch (err) {}
+              handleTime(t, dd);
+            }
+          });
+        } catch (err) {}
+      });
     }
   };
 
-  QuestionScreen.prototype._ensurePandaApi = function (iframeId, onPlay, onIdle) {
+  QuestionScreen.prototype._ensurePandaApi = function (iframeId, onReady) {
     var API = 'https://player.pandavideo.com.br/api.v2.js';
     function bind() {
       try {
         if (typeof PandaPlayer === 'undefined') return;
         var player = new PandaPlayer(iframeId, {
-          onReady: function () {
-            try {
-              player.onEvent(function (e) {
-                var msg = e && e.message;
-                if (msg === 'panda_play') onPlay();
-                if (msg === 'panda_pause' || msg === 'panda_ended') onIdle();
-              });
-            } catch (err) {}
-          }
+          onReady: function () { onReady(player); }
         });
       } catch (err) {}
     }
@@ -1079,6 +1260,12 @@
     }
     var vid = this.el.querySelector('video');
     if (vid) { try { vid.pause(); } catch (e) {} }
+    if (this._videoGuard) {
+      clearTimeout(this._videoGuard.seekTimer);
+      clearTimeout(this._videoGuard.backTimer);
+      this._videoGuard = null;
+    }
+    this._pandaPlayer = null;
     if (this._onVideoMsg) {
       window.removeEventListener('message', this._onVideoMsg);
       this._onVideoMsg = null;
