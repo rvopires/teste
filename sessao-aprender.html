@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Trilha da Ergonomia</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=mob10">
+  <link rel="stylesheet" href="question-screen.css?v=mob11">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -150,10 +150,10 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=mob10"></script>
-  <script src="question-screen.js?v=mob10"></script>
-  <script src="narration-text.js?v=mob10"></script>
-  <script src="narration.js?v=mob10"></script>
+  <script src="question-screen-data.js?v=mob11"></script>
+  <script src="question-screen.js?v=mob11"></script>
+  <script src="narration-text.js?v=mob11"></script>
+  <script src="narration.js?v=mob11"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -677,25 +677,38 @@
   }
 
   /* No celular a trilha não cabe inteira: a lista começa no Módulo 1 e o
-     liberado pode ficar abaixo da dobra, passando a impressão de que o curso
-     termina no 2. Aqui a rolagem já vai até ele. O movimento é suave de
-     propósito: além de levar ao card certo, mostra que a lista corre. */
+     módulo da vez pode ficar abaixo da dobra, passando a impressão de que o
+     curso termina no 2. Aqui a rolagem já vai até ele. O movimento é suave de
+     propósito: além de levar ao card certo, mostra que a lista corre.
+
+     O alvo é o índice liberado, e não o primeiro card marcado como aberto:
+     quem pula páginas pelo atalho destrava todos os módulos anteriores de
+     uma vez, e aí o primeiro aberto seria sempre o Módulo 1. */
   function revelarModuloLiberado() {
     var caixa = shell.querySelector('.qs-menu');
-    var card = caixa && caixa.querySelector('.qs-mod-card.is-open');
-    if (!caixa || !card) return;
+    if (!caixa) return;
+    var alvo = Math.min(progress.unlockedUpTo, modules.length - 1);
+    var card = caixa.querySelector('.qs-mod-card[data-mod="' + alvo + '"]');
+    if (!card) return;
 
     requestAnimationFrame(function () {
       var sobra = caixa.scrollHeight - caixa.clientHeight;
       if (sobra <= 0) return;                       // cabe tudo: nada a fazer
 
-      var rc = card.getBoundingClientRect();
-      var rb = caixa.getBoundingClientRect();
-      if (rc.top >= rb.top && rc.bottom <= rb.bottom) return;   // já à vista
+      /* offsetTop, e não getBoundingClientRect: o menu entra com uma animação
+         que o encolhe um pouco, e medida de tela sai torta enquanto ela roda. */
+      var topo = card.offsetTop;
+      var fim = topo + card.offsetHeight;
+      var vista = caixa.scrollTop;
 
-      // uma folga acima do card para ele não colar na borda
-      var destino = rc.top - rb.top + caixa.scrollTop - 12;
-      caixa.scrollTo({ top: Math.max(0, Math.min(sobra, destino)), behavior: 'smooth' });
+      // não basta caber na borda: sem respiro embaixo o card passa despercebido
+      var RESPIRO = 40;
+      if (topo >= vista && fim + RESPIRO <= vista + caixa.clientHeight) return;
+
+      caixa.scrollTo({
+        top: Math.max(0, Math.min(sobra, topo - 12)),
+        behavior: 'smooth'
+      });
     });
   }
 

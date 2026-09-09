@@ -3040,6 +3040,9 @@
 
 /* menu de módulos */
 .qs-menu {
+  /* referência para o offsetTop dos cards: é assim que a trilha sabe até
+     onde rolar para mostrar o módulo da vez */
+  position: relative;
   height: 100%;
   background: var(--qs-paper);
   border-radius: var(--qs-radius);
