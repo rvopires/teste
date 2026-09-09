@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Trilha da Ergonomia</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=mob02">
+  <link rel="stylesheet" href="question-screen.css?v=mob03">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -101,6 +101,9 @@
       </button>
       <div class="qs-col">
         <div class="qs-shell" id="shell"></div>
+        <button type="button" class="qs-more" id="btnMore" hidden aria-label="Ver o conteúdo abaixo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
       </div>
       <button class="qs-nav" id="btnFwd" aria-label="Próximo" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -147,10 +150,10 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=mob02"></script>
-  <script src="question-screen.js?v=mob02"></script>
-  <script src="narration-text.js?v=mob02"></script>
-  <script src="narration.js?v=mob02"></script>
+  <script src="question-screen-data.js?v=mob03"></script>
+  <script src="question-screen.js?v=mob03"></script>
+  <script src="narration-text.js?v=mob03"></script>
+  <script src="narration.js?v=mob03"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -1165,6 +1168,55 @@
       seq = '';
       toggleDemoMode();
     });
+  })();
+
+  /* Setinha de "tem mais abaixo". O que rola muda conforme a tela — ora o
+     cartão inteiro, ora só o painel de texto, ora o menu — então ela procura
+     quem de fato tem conteúdo escondido em vez de apostar num deles. Some
+     sozinha ao chegar no fim e nas telas que já cabem inteiras. */
+  (function initMoreHint() {
+    var btn = document.getElementById('btnMore');
+    if (!btn) return;
+    var FOLGA = 12;          // px de sobra que não valem como "tem mais"
+    var agendado = false;
+
+    function rolavel() {
+      var alvos = stage.querySelectorAll('[data-qs-root], .qs-panel, .qs-menu');
+      for (var i = 0; i < alvos.length; i++) {
+        if (alvos[i].scrollHeight - alvos[i].clientHeight > FOLGA) return alvos[i];
+      }
+      return null;
+    }
+
+    function sync() {
+      agendado = false;
+      var el = rolavel();
+      var falta = el ? (el.scrollHeight - el.clientHeight - el.scrollTop) : 0;
+      btn.hidden = falta <= FOLGA;
+    }
+
+    function agendar() {
+      if (agendado) return;
+      agendado = true;
+      requestAnimationFrame(sync);
+    }
+
+    btn.addEventListener('click', function () {
+      var el = rolavel();
+      if (!el) return;
+      el.scrollBy({ top: Math.round(el.clientHeight * 0.8), behavior: 'smooth' });
+    });
+
+    /* 'scroll' e 'load' não sobem na árvore, daí a escuta na fase de captura.
+       O observer cobre a troca de tela sem precisar avisar daqui de fora; ele
+       só olha filhos, então esconder/mostrar o próprio botão não o acorda. */
+    stage.addEventListener('scroll', agendar, true);
+    stage.addEventListener('load', agendar, true);
+    window.addEventListener('resize', agendar);
+    if (window.MutationObserver) {
+      new MutationObserver(agendar).observe(stage, { childList: true, subtree: true });
+    }
+    agendar();
   })();
 
   /* No celular não dá para digitar qa1010, então cinco toques na logo fazem o
