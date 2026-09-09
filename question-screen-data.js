@@ -678,19 +678,20 @@ window.QUESTION_SCREEN_SESSION = {
         {
           id: "m5-ficha",
           type: "content",
+          steps: true,
           kicker: "📄 Texto",
           title: "Ficha de consulta — sequência de alongamento",
           items: [
-            { n: 1, title: "Mãos:", text: "fechar contra o pulso e abrir — 3×" },
-            { n: 2, title: "Dedos:", text: "entrelaçar e ondular / girar polegares / estender alternado — 3× cada" },
-            { n: 3, title: "Antebraço:", text: "puxar palma para fora — 20 s cada lado, 3×" },
-            { n: 4, title: "Punhos:", text: "unir palmas no peito e afastar / girar nos dois sentidos" },
-            { n: 5, title: "Braços:", text: "cotovelo atrás da cabeça — 20 s cada lado, 3×" },
-            { n: 6, title: "Braços (atrás do corpo):", text: "dedos entrelaçados, afastar do corpo — 20 s, 3×" },
-            { n: 7, title: "Braços (acima da cabeça):", text: "dedos entrelaçados, palmas para cima — 20 s" },
-            { n: 8, title: "Cabeça/pescoço:", text: "sim/não e inclinação lateral — 20 s cada lado, 3× (evitar levar a cabeça para trás)" },
-            { n: 9, title: "Ombros:", text: "elevar ao inspirar / girar frente-trás — 3× cada sentido" },
-            { n: 10, title: "Tronco:", text: "braço sobre a cabeça, inclinação lateral — 20 s cada lado, 3×" }
+            { n: 1, title: "Mãos:", text: "fechar contra o pulso e abrir — 3×", image: "assets/fotos/alongamentos/m5-maos.png", imageAlt: "Alongamento de mãos" },
+            { n: 2, title: "Dedos:", text: "entrelaçar e ondular / girar polegares / estender alternado — 3× cada", image: "assets/fotos/alongamentos/m5-dedos.png", imageAlt: "Alongamento de dedos" },
+            { n: 3, title: "Antebraço:", text: "puxar palma para fora — 20 s cada lado, 3×", image: "assets/fotos/alongamentos/m5-antebraco.png", imageAlt: "Alongamento de antebraço" },
+            { n: 4, title: "Punhos:", text: "unir palmas no peito e afastar / girar nos dois sentidos", image: "assets/fotos/alongamentos/m5-punhos.png", imageAlt: "Alongamento de punhos" },
+            { n: 5, title: "Braços:", text: "cotovelo atrás da cabeça — 20 s cada lado, 3×", image: "assets/fotos/alongamentos/m5-bracos.png", imageAlt: "Alongamento de braços" },
+            { n: 6, title: "Braços (atrás do corpo):", text: "dedos entrelaçados, afastar do corpo — 20 s, 3×", image: "assets/fotos/alongamentos/m5-bracos-atras.png", imageAlt: "Alongamento de braços atrás do corpo" },
+            { n: 7, title: "Braços (acima da cabeça):", text: "dedos entrelaçados, palmas para cima — 20 s", image: "assets/fotos/alongamentos/m5-bracos-cima.png", imageAlt: "Alongamento de braços acima da cabeça" },
+            { n: 8, title: "Cabeça/pescoço:", text: "sim/não e inclinação lateral — 20 s cada lado, 3× (evitar levar a cabeça para trás)", image: "assets/fotos/alongamentos/m5-cabeca.png", imageAlt: "Alongamento de cabeça e pescoço" },
+            { n: 9, title: "Ombros:", text: "elevar ao inspirar / girar frente-trás — 3× cada sentido", image: "assets/fotos/alongamentos/m5-ombros.png", imageAlt: "Alongamento de ombros" },
+            { n: 10, title: "Tronco:", text: "braço sobre a cabeça, inclinação lateral — 20 s cada lado, 3×", image: "assets/fotos/alongamentos/m5-tronco.png", imageAlt: "Alongamento de tronco" }
           ],
           transcript: "Ficha de consulta dos alongamentos."
         },

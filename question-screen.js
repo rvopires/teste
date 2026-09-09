@@ -316,11 +316,38 @@
     }
     if (Array.isArray(data.items) && data.items.length) {
       html += `<div class="qs-items">${data.items.map(function (it) {
-        var mark = it.n != null
-          ? `<span class="qs-item-num">${esc(it.n)}</span>`
-          : (it.icon ? `<span class="qs-item-ico" aria-hidden="true">${esc(it.icon)}</span>` : '');
+        var raw = it.text || it.body || '';
+
+        /* Item numerado é passo de uma sequência, e nele a dose vem depois
+           do travessão: "puxar palma para fora — 20 s cada lado, 3×". Em
+           etiquetas, o tempo e as repetições saltam aos olhos sem obrigar
+           a ler a frase inteira. Listas com ícone seguem como estavam:
+           ali o travessão é pontuação, não separador de dose. */
+        if (it.n != null) {
+          var d = splitDose(raw);
+          var doses = (d ? d.tags : []).map(function (t) {
+            var rep = t.indexOf('×') !== -1;   // "3×" é repetição; "20 s" é tempo
+            return `<span class="qs-dose ${rep ? 'is-rep' : 'is-time'}">${esc(t)}</span>`;
+          }).join('');
+          var thumb = it.image
+            ? `<div class="qs-item-thumb"><img src="${esc(it.image)}" alt="${esc(it.imageAlt || it.title || '')}" loading="eager" decoding="async"></div>`
+            : `<span class="qs-item-num">${esc(it.n)}</span>`;
+          return `<div class="qs-item is-step${it.image ? ' has-thumb' : ''}">
+            ${thumb}
+            <div class="qs-item-txt">
+              <div class="qs-item-head">
+                <span class="qs-item-label">${it.n != null ? `<span class="qs-item-n">${esc(it.n)}</span>` : ''}${it.title ? `<b>${esc(it.title)}</b>` : ''}</span>
+                ${doses ? `<span class="qs-doses">${doses}</span>` : ''}
+              </div>
+              <p>${esc(d ? d.move : raw)}</p>
+              ${d && d.caveat ? `<span class="qs-item-warn">${esc(d.caveat)}</span>` : ''}
+            </div>
+          </div>`;
+        }
+
+        var mark = it.icon ? `<span class="qs-item-ico" aria-hidden="true">${esc(it.icon)}</span>` : '';
         var title = it.title ? `<b>${esc(it.title)}</b> ` : '';
-        return `<div class="qs-item">${mark}<p>${title}${esc(it.text || it.body || '')}</p></div>`;
+        return `<div class="qs-item">${mark}<p>${title}${esc(raw)}</p></div>`;
       }).join('')}</div>`;
     }
     if (Array.isArray(data.compare) && data.compare.length) {
@@ -356,10 +383,37 @@
     return html;
   }
 
+  /* Separa o movimento da dose num passo de sequência. Devolve null quando
+     não há travessão, e aí o texto segue inteiro — nada se perde se o
+     conteúdo mudar de formato depois. Um aviso entre parênteses no fim sai
+     da dose e vira linha própria, para não virar etiqueta. */
+  function splitDose(text) {
+    var i = String(text).indexOf('—');
+    if (i < 0) return null;
+    var move = text.slice(0, i).trim();
+    var rest = text.slice(i + 1).trim();
+    var caveat = '';
+    var par = rest.match(/\(([^)]*)\)\s*$/);
+    if (par) {
+      caveat = par[1].trim();
+      rest = rest.slice(0, par.index).trim();
+    }
+    var tags = rest.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    if (!move || !tags.length) return null;
+    return { move: move, tags: tags, caveat: caveat };
+  }
+
   function contentHTML(data) {
     var hasImg = !!data.image;
     var rulesCount = Array.isArray(data.rules) ? data.rules.length : 0;
     var normCompact = !!(data.compact || (hasImg && rulesCount > 0));
+
+    /* Sequência com foto: um exercício por vez, em vez da lista densa.
+       A ficha de alongamento usa isso — a foto grande ensina o movimento. */
+    if (data.steps && Array.isArray(data.items) && data.items.length) {
+      return stepsHTML(data);
+    }
+
     var head = `<h2 class="qs-title">${esc(data.title || '')}</h2>
           ${contentBlocks(data)}`;
     if (hasImg) {
@@ -382,6 +436,52 @@
       <article class="qs-screen is-content is-text${dense ? ' is-dense' : ''}" data-qs-root data-type="content">
         <div class="qs-panel qs-panel-text">
           ${head}
+        </div>
+      </article>`;
+  }
+
+  function stepsHTML(data) {
+    var items = data.items || [];
+    var slides = items.map(function (it, i) {
+      var raw = it.text || it.body || '';
+      var d = splitDose(raw);
+      var doses = (d ? d.tags : []).map(function (t) {
+        var rep = t.indexOf('×') !== -1;
+        return `<span class="qs-dose ${rep ? 'is-rep' : 'is-time'}">${esc(t)}</span>`;
+      }).join('');
+      var num = it.n != null ? it.n : (i + 1);
+      return `<div class="qs-step${i === 0 ? ' is-on' : ''}" data-qs-step="${i}"${i === 0 ? '' : ' hidden'}>
+        <div class="qs-step-media">
+          ${it.image
+            ? `<img class="qs-step-img" src="${esc(it.image)}" alt="${esc(it.imageAlt || it.title || '')}" loading="${i < 2 ? 'eager' : 'lazy'}" decoding="async">`
+            : `<div class="qs-step-fallback">${esc(num)}</div>`}
+        </div>
+        <div class="qs-step-info">
+          <div class="qs-step-head">
+            <span class="qs-step-num">${esc(num)}</span>
+            ${it.title ? `<b class="qs-step-title">${esc(it.title)}</b>` : ''}
+            ${doses ? `<span class="qs-doses">${doses}</span>` : ''}
+          </div>
+          <p class="qs-step-move">${esc(d ? d.move : raw)}</p>
+          ${d && d.caveat ? `<span class="qs-item-warn">${esc(d.caveat)}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    return `
+      <article class="qs-screen is-content is-steps" data-qs-root data-type="content">
+        <div class="qs-steps" data-qs-steps>
+          <header class="qs-steps-top">
+            <h2 class="qs-title">${esc(data.title || '')}</h2>
+            <span class="qs-steps-count" data-qs-step-count>Exercício 1 de ${items.length}</span>
+          </header>
+          <div class="qs-steps-track">${slides}</div>
+          <div class="qs-steps-actions">
+            <button type="button" class="qs-step-back" data-qs-step-prev hidden>Ver anterior</button>
+            <button type="button" class="qs-step-cta" data-qs-step-next>
+              Próximo exercício
+            </button>
+          </div>
         </div>
       </article>`;
   }
@@ -658,7 +758,7 @@
     this.el.addEventListener('click', this._onClick);
 
     var lockedVideo = type === 'video' && !!(this.data.embed || this.data.panda || this.data.video);
-    var gated = type === 'question' || type === 'order' || type === 'match' || type === 'reflect' || type === 'compare' || lockedVideo;
+    var gated = type === 'question' || type === 'order' || type === 'match' || type === 'reflect' || type === 'compare' || lockedVideo || (type === 'content' && !!(this.data && this.data.steps));
     if (!gated) this.state.answered = true;
 
     if (type === 'video' && (this.data.embed || this.data.panda || this.data.youtube || this.data.video)) {
@@ -668,6 +768,7 @@
     if (type === 'compare') this._bindCompare();
     if (type === 'order') this._bindOrder();
     if (type === 'match') this._bindMatch();
+    if (type === 'content' && this.data && this.data.steps) this._bindSteps();
 
     if ((type === 'question' || type === 'order') && this.options.quizScoring) {
       if (this.root) this.root.classList.add('is-timed');
@@ -995,6 +1096,76 @@
         }
       });
     });
+  };
+
+  QuestionScreen.prototype._bindSteps = function () {
+    var self = this;
+    var root = this.el.querySelector('[data-qs-steps]');
+    if (!root) return;
+    var slides = Array.prototype.slice.call(root.querySelectorAll('[data-qs-step]'));
+    var count = root.querySelector('[data-qs-step-count]');
+    var prev = root.querySelector('[data-qs-step-prev]');
+    var next = root.querySelector('[data-qs-step-next]');
+    var i = 0;
+    var total = slides.length;
+    var farthest = 0; // só avança em ordem; não dá para pular exercício
+
+    function paint() {
+      slides.forEach(function (s, k) {
+        var on = k === i;
+        s.classList.toggle('is-on', on);
+        s.hidden = !on;
+      });
+      if (count) count.textContent = 'Exercício ' + (i + 1) + ' de ' + total;
+      if (prev) prev.hidden = i <= 0;
+
+      if (!next) return;
+      if (self.state.answered) {
+        next.hidden = true;
+        return;
+      }
+      next.hidden = false;
+      if (i < total - 1) {
+        next.textContent = 'Próximo exercício';
+        next.classList.remove('is-finish');
+      } else {
+        next.textContent = 'Concluir sequência';
+        next.classList.add('is-finish');
+      }
+    }
+
+    function goTo(n) {
+      if (n < 0 || n >= total) return;
+      /* Só permite voltar ou avançar um a um até onde já chegou —
+         assim a seta da página não libera sem ver tudo. */
+      if (n > farthest + 1) return;
+      i = n;
+      farthest = Math.max(farthest, i);
+      paint();
+    }
+
+    if (prev) {
+      prev.addEventListener('click', function () {
+        beep('click');
+        goTo(i - 1);
+      });
+    }
+    if (next) {
+      next.addEventListener('click', function () {
+        beep('click');
+        if (i < total - 1) {
+          goTo(i + 1);
+          return;
+        }
+        if (!self.state.answered) {
+          beep('ok');
+          root.classList.add('is-done');
+          self._complete({ kind: 'steps' });
+          paint();
+        }
+      });
+    }
+    paint();
   };
 
   QuestionScreen.prototype._bindOrder = function () {

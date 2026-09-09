@@ -1050,6 +1050,12 @@
 }
 .qs-more[hidden] { display: none; }
 
+/* A seta é muleta de tela pequena, onde o conteúdo precisa mesmo descer.
+   No computador tudo cabe, então ela só poluiria o canto. */
+@media (min-width: 761px) {
+  .qs-more { display: none !important; }
+}
+
 /* Halo que abre e some: é o que puxa o olho até o canto sem precisar de texto */
 .qs-more::before {
   content: '';
@@ -2682,6 +2688,364 @@
   place-items: center;
 }
 
+/* ===== Ficha de consulta (página 50) ================================
+   São dez alongamentos numa tela só. Em coluna única a lista estourava
+   a altura e obrigava a rolar. Aqui ela vira duas colunas lidas de cima
+   para baixo, como uma ficha impressa: cabe inteira e a pessoa acha de
+   relance o exercício que quer conferir, com a parte do corpo em cima
+   e o movimento embaixo. */
+.qs-screen.is-text.is-dense .qs-title {
+  font-size: clamp(1.06rem, 2.1vw, 1.44rem);
+  margin-bottom: 10px;
+}
+.qs-screen.is-text.is-dense .qs-items {
+  display: grid;
+  grid-template-rows: repeat(5, auto);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 7px 14px;
+  margin: 0;
+}
+.qs-screen.is-text.is-dense .qs-item {
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f6fbf9 0%, #e9f4ef 100%);
+  border: 1px solid rgba(18, 107, 82, 0.14);
+  border-left: 3px solid var(--qs-green);
+  animation: qsFichaIn 0.36s ease both;
+}
+.qs-screen.is-text.is-dense .qs-item-num {
+  flex: 0 0 25px;
+  height: 25px;
+  font-size: 0.74rem;
+  box-shadow: 0 2px 7px rgba(224, 40, 56, 0.32);
+}
+.qs-screen.is-text.is-dense .qs-item p {
+  font-size: 0.79rem;
+  line-height: 1.34;
+  color: #466055;
+}
+/* Cada passo se lê em duas alturas: em cima a parte do corpo e a dose,
+   embaixo o movimento. Quem procura "ombros" acha pelo título; quem quer
+   saber quanto tempo segurar acha pela etiqueta, sem ler a frase. */
+.qs-item.is-step { align-items: center; }
+.qs-item-txt { flex: 1 1 auto; min-width: 0; }
+/* "Braços (acima da cabeça):" com duas etiquetas não cabe numa linha só
+   em coluna estreita: aí as etiquetas descem em vez de espremer o título. */
+.qs-item-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+}
+.qs-item-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.qs-item-n {
+  flex: 0 0 auto;
+  font-family: var(--qs-font-h);
+  font-weight: 800;
+  font-size: 0.68rem;
+  color: var(--qs-red-dk);
+  letter-spacing: 0.02em;
+}
+.qs-item-head b {
+  font-family: var(--qs-font-h);
+  font-weight: 800;
+  font-size: 0.77rem;
+  color: var(--qs-green-2);
+  letter-spacing: 0.01em;
+}
+.qs-doses { display: flex; flex: 0 0 auto; gap: 4px; }
+.qs-dose {
+  font-family: var(--qs-font-h);
+  font-weight: 800;
+  font-size: 0.62rem;
+  line-height: 1;
+  padding: 4px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+.qs-dose.is-time {
+  color: var(--qs-green-2);
+  background: rgba(18, 107, 82, 0.11);
+  border: 1px solid rgba(18, 107, 82, 0.22);
+}
+.qs-dose.is-rep {
+  color: var(--qs-red-dk);
+  background: rgba(255, 64, 72, 0.1);
+  border: 1px solid rgba(255, 64, 72, 0.26);
+}
+/* ressalva do exercício 8: é alerta, não dose — fica fora das etiquetas */
+.qs-item-warn {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--qs-red-dk);
+}
+.qs-item-warn::before { content: '⚠ '; }
+
+/* ===== Sequência com foto (página 50) ==============================
+   Um exercício por vez: a ilustração ganha o protagonismo e o texto
+   acompanha. Setas e bolinhas trocam o passo sem sair da tela. */
+.qs-screen.is-steps {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: linear-gradient(165deg, #f7fbf9 0%, #eef6f2 55%, #e6f2ec 100%);
+}
+.qs-steps {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px 14px;
+  box-sizing: border-box;
+}
+.qs-steps-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+.qs-screen.is-steps .qs-title {
+  margin: 0;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+}
+.qs-steps-count {
+  flex: 0 0 auto;
+  font-family: var(--qs-font-h);
+  font-weight: 800;
+  font-size: 0.78rem;
+  color: var(--qs-green-2);
+  background: rgba(18, 107, 82, 0.1);
+  border: 1px solid rgba(18, 107, 82, 0.2);
+  border-radius: 999px;
+  padding: 5px 10px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.qs-steps-track {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+}
+.qs-step {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(220px, 0.85fr);
+  gap: 16px;
+  align-items: stretch;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(18px);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+.qs-step.is-on {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+.qs-step-media {
+  min-height: 0;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid rgba(18, 107, 82, 0.12);
+  box-shadow: 0 10px 28px rgba(4, 26, 20, 0.1);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 10px;
+}
+.qs-step-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+.qs-step-fallback {
+  font-family: var(--qs-font-h);
+  font-weight: 900;
+  font-size: 3rem;
+  color: rgba(18, 107, 82, 0.25);
+}
+.qs-step-info {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 4px;
+}
+.qs-step-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+.qs-step-num {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--qs-red);
+  color: #fff;
+  font-family: var(--qs-font-h);
+  font-weight: 800;
+  font-size: 0.88rem;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 12px rgba(224, 40, 56, 0.35);
+}
+.qs-step-title {
+  font-family: var(--qs-font-h);
+  font-weight: 800;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  color: var(--qs-green-2);
+  letter-spacing: 0.01em;
+}
+.qs-step-move {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.6vw, 1.12rem);
+  font-weight: 600;
+  line-height: 1.45;
+  color: #33453e;
+  max-width: 36ch;
+}
+.qs-steps-actions {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+.qs-step-cta {
+  min-width: min(320px, 100%);
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 22px;
+  font-family: var(--qs-font-h);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #178a68, var(--qs-green-2));
+  box-shadow: 0 8px 20px rgba(18, 107, 82, 0.32);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.qs-step-cta:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.qs-step-cta:active { transform: scale(0.98); }
+.qs-step-cta.is-finish {
+  background: linear-gradient(135deg, #2bb673, var(--qs-ok-dk));
+  box-shadow: 0 8px 20px rgba(31, 157, 85, 0.35);
+}
+.qs-step-back {
+  border: 0;
+  background: transparent;
+  padding: 4px 8px;
+  font-family: var(--qs-font-b);
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--qs-muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.qs-step-back:hover { color: var(--qs-green-2); }
+.qs-steps.is-done .qs-steps-count {
+  color: #fff;
+  background: var(--qs-ok);
+  border-color: transparent;
+}
+.qs-steps.is-done .qs-steps-count::after {
+  content: ' · concluído';
+}
+
+@media (max-width: 760px) {
+  .qs-steps { padding: 12px 12px 10px; gap: 8px; }
+  .qs-step {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+  .qs-step-media {
+    border-radius: 14px;
+    padding: 6px;
+    min-height: 180px;
+  }
+  .qs-step-info {
+    padding: 0 2px;
+    gap: 6px;
+    justify-content: flex-start;
+  }
+  .qs-step-move { font-size: 0.92rem; max-width: none; }
+  .qs-steps-count { font-size: 0.72rem; padding: 4px 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qs-step { transition: none !important; transform: none !important; }
+}
+
+/* Miniatura do exercício: a foto confirma o movimento sem virar galeria. */
+.qs-item-thumb {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  border-radius: 11px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(18, 107, 82, 0.14);
+  box-shadow: 0 2px 8px rgba(4, 26, 20, 0.08);
+}
+.qs-item-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+.qs-screen.is-text.is-dense .qs-item.has-thumb {
+  gap: 9px;
+  padding: 6px 10px;
+}
+.qs-screen.is-text.is-dense .qs-item-thumb {
+  flex-basis: 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+}
+
+/* entram em cascata, sugerindo a sequência do primeiro ao último */
+@keyframes qsFichaIn {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: none; }
+}
+.qs-screen.is-text.is-dense .qs-item:nth-child(1) { animation-delay: 0.02s; }
+.qs-screen.is-text.is-dense .qs-item:nth-child(2) { animation-delay: 0.06s; }
+.qs-screen.is-text.is-dense .qs-item:nth-child(3) { animation-delay: 0.10s; }
+.qs-screen.is-text.is-dense .qs-item:nth-child(4) { animation-delay: 0.14s; }
+.qs-screen.is-text.is-dense .qs-item:nth-child(5) { animation-delay: 0.18s; }
+.qs-screen.is-text.is-dense .qs-item:nth-child(6) { animation-delay: 0.22s; }
+.qs-screen.is-text.is-dense .qs-item:nth-child(7) { animation-delay: 0.26s; }
+.qs-screen.is-text.is-dense .qs-item:nth-child(8) { animation-delay: 0.30s; }
+.qs-screen.is-text.is-dense .qs-item:nth-child(9) { animation-delay: 0.34s; }
+.qs-screen.is-text.is-dense .qs-item:nth-child(10) { animation-delay: 0.38s; }
+
 .qs-compare {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3434,6 +3798,22 @@
   .qs-item-ico { font-size: 1.05rem; }
   .qs-item-num { flex-basis: 22px; height: 22px; font-size: 0.74rem; }
 
+  /* Ficha de consulta: duas colunas não cabem no celular, então ela volta
+     a ser uma lista só — e aqui a seta de rolagem faz sentido. */
+  .qs-screen.is-text.is-dense .qs-items {
+    grid-auto-flow: row;
+    grid-template-rows: none;
+    grid-auto-columns: auto;
+    gap: 6px;
+  }
+  .qs-screen.is-text.is-dense .qs-item p { font-size: 0.82rem; }
+  .qs-screen.is-text.is-dense .qs-item p b { font-size: 0.8rem; }
+  .qs-screen.is-text.is-dense .qs-item-thumb {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+  }
+
   .qs-rules { gap: 6px; margin: 2px 0 6px; }
   .qs-rule { padding: 8px 10px; gap: 9px; border-radius: 10px; }
   .qs-rule p { font-size: 0.84rem; line-height: 1.34; }
@@ -3500,6 +3880,7 @@
   .qs-more::before, .qs-more svg { animation: none !important; }
   .qs-home-start, .qs-home-start::after { animation: none !important; }
   .qs-screen, .qs-explain, .qs-finale-card, .qs-result-banner span { animation: none !important; }
+  .qs-screen.is-text.is-dense .qs-item { animation: none !important; }
   .qs-screen.is-question .qs-img,
   .qs-quiz-intro-btn,
   .qs-media.is-answered::after,

@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Trilha da Ergonomia</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=mob15">
+  <link rel="stylesheet" href="question-screen.css?v=mob22">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -150,10 +150,10 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=mob15"></script>
-  <script src="question-screen.js?v=mob15"></script>
-  <script src="narration-text.js?v=mob15"></script>
-  <script src="narration.js?v=mob15"></script>
+  <script src="question-screen-data.js?v=mob22"></script>
+  <script src="question-screen.js?v=mob22"></script>
+  <script src="narration-text.js?v=mob22"></script>
+  <script src="narration.js?v=mob22"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -224,6 +224,10 @@
   }
   function isGateType(type) {
     return isScoreType(type) || type === 'reflect' || type === 'compare';
+  }
+  // ficha com sequência de fotos: a seta só libera depois de ver todas
+  function isStepsGate(s) {
+    return !!(s && s.type === 'content' && s.steps);
   }
   // vídeo com player: só libera o avanço faltando ~8s para o fim
   function isVideoGate(s) {
@@ -464,11 +468,14 @@
   }
 
   function canForward() {
-    if (demoMode) return !isFinale();
     if (isFinale()) return false;
     if (showingResult) return !!quizState.passed;
     var s = current();
     if (!s) return false;
+    /* A ficha de alongamento trava a seta mesmo em simulação: o bloqueio
+       faz parte do teste da página. O atalho go continua pulando. */
+    if (isStepsGate(s)) return !!answered[s.id];
+    if (demoMode) return true;
     if (s.type === 'question') return !!answered[s.id];
     if (isGateType(s.type)) return !!answered[s.id];
     if (isVideoGate(s)) return !!answered[s.id];
@@ -790,7 +797,9 @@
       bestStreak: 0
     };
     for (i = 0; i < list.length; i++) {
-      if (isGateType(list[i].type) && list[i].id) answered[list[i].id] = true;
+      if ((isGateType(list[i].type) || isStepsGate(list[i]) || isVideoGate(list[i])) && list[i].id) {
+        answered[list[i].id] = true;
+      }
     }
     if (targetSi > intro) showingResult = false;
   }
@@ -981,7 +990,7 @@
       onContinue: handleContinue
     });
 
-    if (!isGateType(s.type) && !isVideoGate(s)) answered[s.id] = true;
+    if (!isGateType(s.type) && !isVideoGate(s) && !isStepsGate(s)) answered[s.id] = true;
     if (s.type === 'finale') completeCurrentModule();
     renderProgress();
     updateNav();
