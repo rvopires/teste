@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Trilha da Ergonomia</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=narr01">
+  <link rel="stylesheet" href="question-screen.css?v=noresume">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -147,10 +147,10 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=narr01"></script>
-  <script src="question-screen.js?v=narr01"></script>
-  <script src="narration-text.js?v=narr01"></script>
-  <script src="narration.js?v=narr01"></script>
+  <script src="question-screen-data.js?v=noresume"></script>
+  <script src="question-screen.js?v=noresume"></script>
+  <script src="narration-text.js?v=noresume"></script>
+  <script src="narration.js?v=noresume"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -324,66 +324,11 @@
     }
   }
 
+  /* O progresso vive só na memória: os módulos vão se liberando durante a
+     visita, mas recarregar a página recomeça da abertura. A linha abaixo
+     limpa o que as versões anteriores tinham deixado salvo no navegador. */
   var progress = { unlockedUpTo: 0, completed: {} };
-  var RESUME_KEY = 'nr17-sessao-aprender-resume';
-
-  function saveResume() {
-    try {
-      localStorage.setItem(RESUME_KEY, JSON.stringify({
-        mode: mode,
-        modIndex: modIndex,
-        slideIndex: slideIndex,
-        progress: progress,
-        answered: answered,
-        quizState: quizState,
-        showingResult: showingResult,
-        sessionAnswers: sessionAnswers
-      }));
-    } catch (err) {}
-  }
-
-  function loadResume() {
-    try {
-      var raw = localStorage.getItem(RESUME_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw);
-    } catch (err) {
-      return null;
-    }
-  }
-
-  function applyResume(saved) {
-    if (!saved || typeof saved !== 'object') return false;
-    if (saved.progress && typeof saved.progress === 'object') {
-      progress.unlockedUpTo = Math.max(0, Number(saved.progress.unlockedUpTo) || 0);
-      progress.completed = saved.progress.completed && typeof saved.progress.completed === 'object'
-        ? saved.progress.completed
-        : {};
-    }
-    if (saved.sessionAnswers && typeof saved.sessionAnswers === 'object') {
-      sessionAnswers = saved.sessionAnswers;
-    }
-    if (saved.mode === 'menu') {
-      showMenu();
-      return true;
-    }
-    if (saved.mode === 'play' && saved.modIndex >= 0 && modules[saved.modIndex]) {
-      var list = modules[saved.modIndex].screens || [];
-      var si = Math.max(0, Math.min(Number(saved.slideIndex) || 0, list.length - 1));
-      modIndex = saved.modIndex;
-      slideIndex = si;
-      answered = saved.answered && typeof saved.answered === 'object' ? saved.answered : {};
-      if (saved.quizState && typeof saved.quizState === 'object') quizState = saved.quizState;
-      showingResult = !!saved.showingResult;
-      mode = 'play';
-      setChrome(true);
-      if (brandTxt) brandTxt.textContent = 'Módulo ' + currentMod().id;
-      if (showingResult) showQuizResult();
-      else mountSlide();
-      return true;
-    }
-    return false;
-  }
+  try { localStorage.removeItem('nr17-sessao-aprender-resume'); } catch (err) {}
 
   var demoMode = false;
   try { demoMode = sessionStorage.getItem('nr17-demoMode') === '1'; } catch (err) {}
@@ -403,7 +348,6 @@
     if (modIndex + 1 < modules.length) {
       progress.unlockedUpTo = Math.max(progress.unlockedUpTo, modIndex + 1);
     }
-    saveResume();
   }
 
   // módulo disponível agora; 0 quando todos já foram concluídos
@@ -483,7 +427,6 @@
     setChrome(false);
     renderProgress();
     syncJumpUI();
-    saveResume();
     if (window.Narration) Narration.pageChanged();
   }
 
@@ -612,7 +555,6 @@
     if (quizState.passed) {
       try { if (typeof playBeep === 'function') playBeep('end'); } catch (e) {}
     }
-    saveResume();
   }
 
   function restartQuiz() {
@@ -727,7 +669,6 @@
     renderProgress();
     updateNav();
     syncJumpUI();
-    saveResume();
     if (window.Narration) Narration.pageChanged();
   }
 
@@ -996,7 +937,6 @@
     updateNav();
     updatePtsChip();
     syncJumpUI();
-    saveResume();
     if (window.Narration) Narration.pageChanged();
   }
 
@@ -1216,18 +1156,6 @@
     });
   })();
 
-  /* Recarregar forçado (Ctrl+F5, Shift+F5, Ctrl+Shift+R) ignora o cache, mas o
-     navegador mantém o localStorage. Zeramos aqui, antes de o reload acontecer.
-     F5 sozinho continua retomando de onde parou. */
-  window.addEventListener('keydown', function (e) {
-    var key = e.key || '';
-    var hard = (key === 'F5' && (e.ctrlKey || e.shiftKey)) ||
-      (key.toLowerCase() === 'r' && e.shiftKey && (e.ctrlKey || e.metaKey));
-    if (!hard) return;
-    try { localStorage.removeItem(RESUME_KEY); } catch (err) {}
-    try { sessionStorage.removeItem('nr17-demoMode'); } catch (err) {}
-  });
-
   applyDemoUI();
   if (demoMode) setJumpOpen(true);
 
@@ -1315,7 +1243,7 @@
     requestAnimationFrame(frame);
   })();
 
-  if (!applyResume(loadResume())) showHome();
+  showHome();
 })();
   </script>
 </body>
