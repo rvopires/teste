@@ -756,7 +756,7 @@ window.QUESTION_SCREEN_SESSION = {
           title: "Parabéns",
           body: "Você concluiu o treinamento NR 17 — Ergonomia no Comércio e na Logística. Por mérito, dedicação e compromisso com a ergonomia, você percorreu os módulos disponíveis.",
           chips: ["NR 17", "Ergonomia", "Comércio e Logística"],
-          image: "assets/fotos/capa.png",
+          image: "assets/fotos/capafinal.png",
           transcript: "Parabéns pela conclusão do treinamento."
         }
       ]
