@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Trilha da Ergonomia</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=mob22">
+  <link rel="stylesheet" href="question-screen.css?v=mob32">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -67,12 +67,10 @@
       </div>
       <div class="qs-progress" id="progress" aria-label="Progresso"></div>
       <span class="qs-page-chip" id="pageChip" hidden>0/0</span>
-      <div class="qs-pts" id="ptsChip" hidden>0 pts</div>
       <div class="qs-tools">
         <button type="button" id="btnMode" class="qs-sim-btn" title="Modo simulação" hidden aria-pressed="false">
           <span class="qs-label" id="simLabel">Simulação: OFF</span>
         </button>
-        <button type="button" id="btnJump" class="qs-sim-btn" title="Mapa de páginas" hidden>Mapa</button>
         <button type="button" id="btnMusic" class="qs-tool-btn" title="Música" aria-pressed="false">
           <span class="qs-tool-disc">
             <svg class="qs-tool-ico ico-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -100,6 +98,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <div class="qs-col">
+        <div class="qs-pts" id="ptsChip" hidden>0 pts</div>
         <div class="qs-shell" id="shell"></div>
         <button type="button" class="qs-more" id="btnMore" hidden aria-label="Ver o conteúdo abaixo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
@@ -150,10 +149,10 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=mob22"></script>
-  <script src="question-screen.js?v=mob22"></script>
-  <script src="narration-text.js?v=mob22"></script>
-  <script src="narration.js?v=mob22"></script>
+  <script src="question-screen-data.js?v=mob32"></script>
+  <script src="question-screen.js?v=mob32"></script>
+  <script src="narration-text.js?v=mob32"></script>
+  <script src="narration.js?v=mob32"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -893,9 +892,7 @@
     var posEl = document.getElementById('simJumpPos');
     if (posEl) posEl.textContent = globalPos;
     var fab = document.getElementById('simFab');
-    var btnJump = document.getElementById('btnJump');
     if (fab) fab.hidden = !demoMode;
-    if (btnJump) btnJump.hidden = !demoMode;
     if (jumpOpen && demoMode) renderJumpList();
     else if (!demoMode) setJumpOpen(false);
   }
@@ -1118,9 +1115,6 @@
 
   document.getElementById('btnMode').addEventListener('click', function () {
     toggleDemoMode();
-  });
-  document.getElementById('btnJump').addEventListener('click', function () {
-    setJumpOpen(!jumpOpen);
   });
   document.getElementById('simFab').addEventListener('click', function () {
     setJumpOpen(!jumpOpen);

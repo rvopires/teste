@@ -526,23 +526,30 @@
   margin: 0 12px;
 }
 .qs-pts {
-  flex: 0 0 auto;
   font-family: var(--qs-font-h);
   font-weight: 800;
   font-size: 0.85rem;
   color: #fff;
-  background: rgba(4, 26, 20, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(4, 26, 20, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
-  padding: 6px 12px;
+  padding: 7px 14px;
   letter-spacing: 0.02em;
-  min-width: 88px;   /* comporta "750 pts" sem crescer e mover o contador */
+  min-width: 88px;
   text-align: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
 }
-/* Calado, mas sem sair da fila: o chip só aparece no desafio, e se ele
-   sumisse de vez a barra se rearranjaria justo aí — o contador andaria de
-   lugar bem na hora em que a pessoa entra na atividade. */
-.qs-pts[hidden] { visibility: hidden; }
+.qs-pts[hidden] { display: none !important; }
+
+/* Placar no canto do quadro — só no desafio, longe das ferramentas. */
+.qs-col > .qs-pts {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 8;
+}
 
 .qs-progress i {
   flex: 1 1 0;
@@ -653,6 +660,7 @@
 #btnMusic.is-on .ico-off { display: none; }
 #btnMusic.is-on .ico-on { display: block; }
 .qs-sim-btn[hidden] { display: none !important; }
+
 .qs-page-chip {
   flex: 0 0 auto;
   font-family: var(--qs-font-h);
@@ -668,12 +676,39 @@
 }
 .qs-page-chip[hidden] { display: none !important; }
 
-/* O contador anda junto da barra que avança: os dois dizem a mesma coisa,
-   um em desenho e outro em número, então ficam colados. Os pontos vêm
-   depois, com um respiro, para não se lerem como parte da paginação. */
 @media (min-width: 761px) {
-  .qs-progress { margin-right: 0; }
-  .qs-pts { margin-left: 10px; }
+  /* Mesmo recuo das bordas do quadro (palco + setas + vão central). */
+  .qs-app:not(.is-home) .qs-top {
+    position: relative;
+    --qs-frame-inset: calc(
+      (100% - min(1180px, 100%)) / 2
+      + 12px
+      + 48px
+      + 10px
+      + max(0px, (min(1180px, 100%) - 24px - 1036px) / 2)
+    );
+  }
+
+  /* Barrinhas do começo ao fim do quadro; o 3/55 fica na ponta direita. */
+  .qs-app:not(.is-home) .qs-progress {
+    position: absolute;
+    top: 50%;
+    left: var(--qs-frame-inset);
+    right: calc(var(--qs-frame-inset) + 78px);
+    max-width: none;
+    margin: 0;
+    transform: translateY(-50%);
+    z-index: 5;
+  }
+  .qs-app:not(.is-home) .qs-page-chip {
+    position: absolute;
+    top: 50%;
+    right: var(--qs-frame-inset);
+    transform: translateY(-50%);
+    z-index: 6;
+  }
+
+  .qs-app:not(.is-home) .qs-tools { margin-left: auto; }
 }
 
 .qs-jump-fab {
@@ -3709,15 +3744,13 @@
    dança. O contador de página desce para a linha do progresso, que
    estava sobrando espaço, e isso devolve a folga que faltava em cima. */
 @media (max-width: 760px) {
-  /* Linha de cima: só identidade e ferramentas. Linha de baixo: onde estou
-     e quanto tenho — a barra que avança, o número da página colado nela e
-     o placar em seguida. Separar por assunto é o que devolveu o espaço. */
+  /* Linha de cima: logo e ferramentas. Linha de baixo: progresso e páginas. */
   .qs-app:not(.is-home) .qs-top {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto;
     grid-template-areas:
-      "marca  ferramentas ferramentas"
-      "trilha pagina      pontos";
+      "marca  ferramentas"
+      "trilha pagina";
     align-items: center;
     gap: 7px 6px;
     padding: 8px 12px 6px;
@@ -3725,8 +3758,7 @@
   .qs-app:not(.is-home) .qs-brand { grid-area: marca; }
   .qs-app:not(.is-home) .qs-tools { grid-area: ferramentas; justify-self: end; }
   .qs-app:not(.is-home) .qs-progress { grid-area: trilha; }
-  .qs-app:not(.is-home) .qs-page-chip { grid-area: pagina; }
-  .qs-app:not(.is-home) .qs-pts { grid-area: pontos; margin-left: 6px; }
+  .qs-app:not(.is-home) .qs-page-chip { grid-area: pagina; justify-self: end; }
 
   .qs-brand img {
     width: auto;
@@ -3736,32 +3768,28 @@
   }
   .qs-progress { min-width: 0; max-width: none; margin: 0; }
 
-  /* Os chips guardam o lugar mesmo calados: sumindo de vez, a coluna
-     fecha e a barra inteira se rearranja quando o desafio começa. */
   .qs-app:not(.is-home) .qs-page-chip[hidden] {
     display: block !important;
     visibility: hidden;
   }
-  .qs-pts,
   .qs-page-chip {
     font-size: 0.72rem;
     padding: 5px 9px;
     min-width: 0;
-    font-variant-numeric: tabular-nums;   /* dígitos de mesma largura */
+    font-variant-numeric: tabular-nums;
   }
-  /* Cabe "750 pts", o maior placar possível, com folga: a coluna já nasce
-     nesse tamanho e não empurra o contador conforme a pontuação sobe. */
-  .qs-pts { min-width: 70px; }
+  .qs-col > .qs-pts {
+    top: 8px;
+    left: 8px;
+    font-size: 0.72rem;
+    padding: 5px 10px;
+    min-width: 64px;
+  }
 
-  /* Sem isto a coluna aperta e "750 pts" quebra em duas linhas: a fileira
-     de cima cresce e as ferramentas, centradas nela, descem junto. Foi o
-     que acontecia ao chegar na última pergunta, quando a pontuação passa
-     a ter três dígitos e o chip fica mais largo. */
-  .qs-pts,
   .qs-page-chip,
   .qs-tool-label,
   .qs-tools .qs-label { white-space: nowrap; }
-  .qs-tools { flex: 0 0 auto; justify-content: flex-end; gap: 8px; }
+  .qs-tools { flex: 0 0 auto; justify-content: flex-end; gap: 8px; align-items: center; }
 }
 
 /* Aparelho estreito: a logo cede altura para caber sem espremer o resto */
