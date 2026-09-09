@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Trilha da Ergonomia</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=mob11">
+  <link rel="stylesheet" href="question-screen.css?v=mob15">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -150,10 +150,10 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=mob11"></script>
-  <script src="question-screen.js?v=mob11"></script>
-  <script src="narration-text.js?v=mob11"></script>
-  <script src="narration.js?v=mob11"></script>
+  <script src="question-screen-data.js?v=mob15"></script>
+  <script src="question-screen.js?v=mob15"></script>
+  <script src="narration-text.js?v=mob15"></script>
+  <script src="narration.js?v=mob15"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -271,8 +271,12 @@
     var chip = document.getElementById('ptsChip');
     if (!chip) return;
     var tot = sessionTotals();
-    var on = mode === 'play' && (quizState.active || showingResult || tot.answered > 0);
-    chip.hidden = !on;
+    /* O placar só faz sentido na atividade do fim do módulo: fora dela não
+       há o que pontuar, e o chip virava enfeite pelo resto do curso. Vale
+       da abertura do desafio até o resultado; depois some de novo. */
+    var s = mode === 'play' ? current() : null;
+    var noDesafio = !!s && (isScoreType(s.type) || s.type === 'quiz-intro');
+    chip.hidden = !(noDesafio || (mode === 'play' && showingResult));
     chip.textContent = tot.points + ' pts';
   }
 
