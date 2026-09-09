@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Trilha da Ergonomia</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=noresume">
+  <link rel="stylesheet" href="question-screen.css?v=go01">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -147,10 +147,10 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=noresume"></script>
-  <script src="question-screen.js?v=noresume"></script>
-  <script src="narration-text.js?v=noresume"></script>
-  <script src="narration.js?v=noresume"></script>
+  <script src="question-screen-data.js?v=go01"></script>
+  <script src="question-screen.js?v=go01"></script>
+  <script src="narration-text.js?v=go01"></script>
+  <script src="narration.js?v=go01"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -1090,11 +1090,11 @@
     updateNav();
   }
 
-  function showSimToast(on) {
+  function showSimToast(msg) {
     var el = document.getElementById('simToast');
     if (!el) return;
     el.hidden = false;
-    el.textContent = on ? '🔓 Modo Simulação ATIVADO' : '🔒 Modo Simulação DESATIVADO';
+    el.textContent = msg;
     el.classList.add('is-on');
     clearTimeout(el._t);
     el._t = setTimeout(function () {
@@ -1110,7 +1110,7 @@
       sessionStorage.removeItem('nr17-demoBtnVisible');
     } catch (err) {}
     applyDemoUI();
-    showSimToast(demoMode);
+    showSimToast(demoMode ? '🔓 Modo Simulação ATIVADO' : '🔒 Modo Simulação DESATIVADO');
     setJumpOpen(demoMode);
     if (mode === 'menu') showMenu();
   }
@@ -1120,14 +1120,27 @@
     var target = 'qa1010';
     var goBuf = '';
     var goTimer = null;
+    var GO_RE = /^go\d{1,3}$/;
+
+    /* "go12" leva à página 12, com Enter ou depois de uma pausa. O pulo é do
+       modo simulação, então fora dele o atalho explica o que falta em vez de
+       não fazer nada — silêncio aqui parece defeito. */
+    function runGo() {
+      if (goTimer) { clearTimeout(goTimer); goTimer = null; }
+      var alvo = GO_RE.test(goBuf) ? parseInt(goBuf.slice(2), 10) : 0;
+      goBuf = '';
+      if (!alvo) return;
+      if (!demoMode) showSimToast('Atalho go: digite qa1010 para ligar a simulação');
+      else if (!jumpToPage(alvo)) showSimToast('Não existe página ' + alvo);
+    }
+
     window.addEventListener('keydown', function (e) {
       if (e.ctrlKey || e.altKey || e.metaKey) return;
       var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
       if (tag === 'input' || tag === 'textarea' || (e.target && e.target.isContentEditable)) return;
-      if (e.key === 'Enter' && demoMode && /^go\d{1,2}$/.test(goBuf)) {
+      if (e.key === 'Enter' && GO_RE.test(goBuf)) {
         e.preventDefault();
-        jumpToPage(parseInt(goBuf.slice(2), 10));
-        goBuf = '';
+        runGo();
         return;
       }
       if (!e.key || e.key.length !== 1) {
@@ -1135,20 +1148,17 @@
         return;
       }
       var ch = e.key.toLowerCase();
-      if (demoMode) {
-        if (ch === 'g') { goBuf = 'g'; return; }
-        if (goBuf === 'g' && ch === 'o') { goBuf = 'go'; return; }
-        if (goBuf.indexOf('go') === 0 && /^\d$/.test(ch) && goBuf.length < 4) {
-          goBuf += ch;
-          if (goTimer) clearTimeout(goTimer);
-          goTimer = setTimeout(function () {
-            if (/^go\d{1,2}$/.test(goBuf)) jumpToPage(parseInt(goBuf.slice(2), 10));
-            goBuf = '';
-          }, 700);
-          return;
-        }
-        goBuf = '';
+
+      if (ch === 'g') { goBuf = 'g'; return; }
+      if (goBuf === 'g' && ch === 'o') { goBuf = 'go'; return; }
+      if (goBuf.indexOf('go') === 0 && /^\d$/.test(ch) && goBuf.length < 5) {
+        goBuf += ch;
+        if (goTimer) clearTimeout(goTimer);
+        goTimer = setTimeout(runGo, 700);
+        return;
       }
+      goBuf = '';
+
       seq = (seq + ch).slice(-target.length);
       if (seq !== target) return;
       seq = '';
