@@ -601,7 +601,7 @@ window.QUESTION_SCREEN_SESSION = {
           count: 1,
           minCorrect: 1,
           icon: "🔢",
-          body: "Toque nos <strong>3 cuidados</strong> do posto administrativo na ordem que faz mais sentido seguir no seu turno. Você tem <strong>22 segundos</strong>. Até <strong>50 pontos</strong> se acertar rápido.",
+          body: "Toque nos <strong>3 cuidados</strong> do posto administrativo na ordem que faz mais sentido seguir no seu turno. Você tem <strong>40 segundos</strong>. Acerte e ganhe <strong>50 pontos</strong>.",
           transcript: "Desafio: ordenar a rotina do posto administrativo."
         },
         {
@@ -610,7 +610,7 @@ window.QUESTION_SCREEN_SESSION = {
           kicker: "🔢 Atividade",
           title: "Ordene a rotina",
           body: "Toque nos cuidados na ordem que você seguiria.",
-          time: 22,
+          time: 40,
           items: [
             { key: "monitor", text: "Posicionar o monitor paralelo à janela", rank: 0 },
             { key: "olhos", text: "Piscar os olhos e olhar um ponto distante nas pausas", rank: 1 },
@@ -714,7 +714,7 @@ window.QUESTION_SCREEN_SESSION = {
           count: 1,
           minCorrect: 1,
           icon: "🧩",
-          body: "Associe cada <strong>exercício</strong> à <strong>região do corpo</strong> que ele alonga. São <strong>8 pares</strong> — clique em um exercício e depois na região correspondente. Até <strong>50 pontos</strong> conforme a rapidez.",
+          body: "Associe cada <strong>exercício</strong> à <strong>região do corpo</strong> que ele alonga. São <strong>8 pares</strong> — clique em um exercício e depois na região correspondente. Acerte e ganhe <strong>50 pontos</strong>.",
           transcript: "Desafio: associar exercícios às regiões do corpo."
         },
         {

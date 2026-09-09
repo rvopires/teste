@@ -600,7 +600,7 @@
     if (!desc && count) {
       desc = 'Responda <strong>' + count + '</strong> perguntas de múltipla escolha.';
       if (min) desc += ' Você precisa acertar no mínimo <strong>' + min + '</strong> para avançar.';
-      desc += ' Cada acerto vale até <strong>50 pontos</strong> — quanto mais rápido, mais pontos.';
+      desc += ' Cada acerto vale <strong>50 pontos</strong>.';
     }
     return `
       <article class="qs-screen is-quiz-intro" data-qs-root data-type="quiz-intro">
@@ -790,7 +790,7 @@
   QuestionScreen.prototype._startTimer = function () {
     this._stopTimer();
     var self = this;
-    var total = Number(this.options.time || this.data.time || 18);
+    var total = Number(this.options.time || this.data.time || 40);
     this._tTot = total;
     this._tLeft = total;
     var bar = this.el.querySelector('[data-qs-timer]');
@@ -811,9 +811,9 @@
 
   QuestionScreen.prototype._quizPoints = function (correct) {
     if (!correct) return 0;
-    var ratio = this._tTot ? Math.max(0, Math.min(1, this._tLeft / this._tTot)) : 1;
+    /* Pontuação fixa por acerto: sem bônus de rapidez. */
     var max = this.options.maxPoints != null ? Number(this.options.maxPoints) : 50;
-    return Math.max(5, Math.min(max, Math.round(max * ratio)));
+    return max;
   };
 
   QuestionScreen.prototype._setVideoPlaying = function (on) {
@@ -1284,10 +1284,8 @@
         render();
         if (matchedCount >= pairs.length) {
           if (self._matchTick) { clearInterval(self._matchTick); self._matchTick = null; }
-          var cap = 90;
-          var ratio = Math.max(0, Math.min(1, 1 - (elapsed / cap)));
           var max = self.options.maxPoints != null ? Number(self.options.maxPoints) : 50;
-          var pts = Math.max(5, Math.min(max, Math.round(max * (0.4 + 0.6 * ratio))));
+          var pts = max;
           beep('end');
           self._complete({ kind: 'match', correct: true, points: pts, elapsed: elapsed });
         } else {

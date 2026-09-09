@@ -143,7 +143,7 @@
     var min = Number(screen.minCorrect) || 0;
     var out = 'Responda ' + count + ' perguntas de múltipla escolha.';
     if (min) out += ' Você precisa acertar no mínimo ' + min + ' para avançar.';
-    return out + ' Cada acerto vale até 50 pontos, quanto mais rápido, mais pontos.';
+    return out + ' Cada acerto vale 50 pontos.';
   }
 
   function buildScreenText(screen) {

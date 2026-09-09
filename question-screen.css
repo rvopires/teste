@@ -437,15 +437,17 @@
     );
   background-size: 100% 100%, 100% 4px;
 }
-.qs-app > .qs-top,
-.qs-app > .qs-stage,
-.qs-app > .qs-wave-session {
+.qs-app > .qs-top {
   position: relative;
-  z-index: 1;
+  z-index: 4;
+}
+.qs-app > .qs-stage {
+  position: relative;
+  z-index: 3; /* quadro e setas na frente da wave */
 }
 .qs-app > .qs-wave-session {
   position: absolute;
-  z-index: 2;
+  z-index: 1; /* wave atrás do quadro */
 }
 
 .qs-app.is-home::after {
@@ -460,7 +462,7 @@
   right: 0;
   height: 100px;
   pointer-events: none;
-  z-index: 2;
+  z-index: 1;
 }
 .qs-wave svg {
   width: 100%;
@@ -526,6 +528,7 @@
   margin: 0 12px;
 }
 .qs-pts {
+  position: relative;
   font-family: var(--qs-font-h);
   font-weight: 800;
   font-size: 0.85rem;
@@ -543,11 +546,53 @@
 }
 .qs-pts[hidden] { display: none !important; }
 
-/* Placar no canto do quadro — só no desafio, longe das ferramentas. */
+/* Acerto: o placar brilha em verde, dá um pulo e sobe o +N. */
+.qs-pts.is-gain {
+  color: #041A14;
+  background: linear-gradient(135deg, #7CFFB2, #2bb673);
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 0 0 4px rgba(44, 182, 115, 0.35),
+    0 10px 22px rgba(31, 157, 85, 0.45);
+  animation: qsPtsPop 0.55s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+.qs-pts-fly {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -8px);
+  font-size: 0.92rem;
+  font-weight: 900;
+  color: #7CFFB2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.qs-pts-fly.is-on {
+  animation: qsPtsFly 0.9s ease-out both;
+}
+@keyframes qsPtsPop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.18); }
+  70% { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+@keyframes qsPtsFly {
+  0% { opacity: 0; transform: translate(-50%, 4px) scale(0.7); }
+  18% { opacity: 1; transform: translate(-50%, -10px) scale(1.12); }
+  100% { opacity: 0; transform: translate(-50%, -34px) scale(1); }
+}
+
+/* Placar acima do quadro (não por cima do conteúdo da atividade).
+   Quando aparece, a coluna ganha respiro no topo. */
+.qs-col:has(> .qs-pts:not([hidden])) {
+  padding-top: 40px;
+}
 .qs-col > .qs-pts {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 4px;
+  left: 0;
   z-index: 8;
 }
 
@@ -3779,11 +3824,14 @@
     font-variant-numeric: tabular-nums;
   }
   .qs-col > .qs-pts {
-    top: 8px;
-    left: 8px;
+    top: 2px;
+    left: 0;
     font-size: 0.72rem;
     padding: 5px 10px;
     min-width: 64px;
+  }
+  .qs-col:has(> .qs-pts:not([hidden])) {
+    padding-top: 34px;
   }
 
   .qs-page-chip,
@@ -3912,8 +3960,15 @@
   .qs-screen.is-question .qs-img,
   .qs-quiz-intro-btn,
   .qs-media.is-answered::after,
-  .qs-mod-card.is-open.is-pulse { animation: none !important; }
+  .qs-mod-card.is-open.is-pulse,
+  .qs-pts.is-gain,
+  .qs-pts-fly.is-on { animation: none !important; }
   .qs-mod-card.is-open.is-pulse {
     box-shadow: 0 0 0 4px rgba(255, 64, 72, 0.25), 0 10px 24px rgba(255, 64, 72, 0.28);
   }
+  .qs-pts.is-gain {
+    color: #041A14;
+    background: linear-gradient(135deg, #7CFFB2, #2bb673);
+  }
+  .qs-pts-fly.is-on { opacity: 0; }
 }
