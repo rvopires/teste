@@ -3244,6 +3244,44 @@
   .qs-tool-label { font-size: 0.6rem; }
 }
 
+/* ===== Barra de topo no celular ==================================
+   A logo tem 208px de largura e não encolhia: numa tela estreita ela
+   empurrava pontos, contador de página e ferramentas para fora da
+   direita, que sumiam sem aviso nenhum. Agora a barra usa duas linhas
+   — em cima os controles, embaixo só o progresso, que é o único que
+   estica bem — e a logo vira a peça flexível, por ser a que menos faz
+   falta se encolher. O respiro de cima diminui para compensar a linha
+   nova e não roubar altura do slide. */
+@media (max-width: 760px) {
+  .qs-top {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px 6px;
+  }
+  .qs-brand { flex: 0 1 auto; min-width: 0; }
+  .qs-brand img {
+    width: auto;
+    height: auto;
+    max-height: 26px;
+    max-width: 100%;
+  }
+  .qs-progress {
+    order: 3;
+    flex: 1 0 100%;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+  }
+  .qs-pts { font-size: 0.72rem; min-width: 0; padding: 5px 9px; }
+  .qs-tools {
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .qs-page-chip { font-size: 0.72rem; padding: 5px 8px; }
+}
+
 /* ===== Densidade no celular =====================================
    A tela do slide tem altura fixa e corta o que sobra, então aqui o
    conteúdo anda mais junto e a fonte encolhe um pouco. O piso é a
