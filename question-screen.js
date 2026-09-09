@@ -34,13 +34,6 @@
     return (Number(m[2]) * 60) + Number(m[3]);
   }
 
-  function fmtClock(secs) {
-    var s = Math.max(0, Math.round(secs));
-    var m = Math.floor(s / 60);
-    var r = s % 60;
-    return m + ':' + (r < 10 ? '0' : '') + r;
-  }
-
   function unlockThreshold(duration) {
     if (!(duration > 0)) return Infinity;
     return duration > VIDEO_UNLOCK_MARGIN ? duration - VIDEO_UNLOCK_MARGIN : duration * 0.85;
@@ -217,12 +210,8 @@
       badge = data.duration ? `Vídeo · ${esc(data.duration)}` : 'Vídeo';
     }
 
-    var lock = (data.embed || data.panda || data.video)
-      ? `<p class="qs-video-lock" data-qs-video-lock role="status">🔒 Assista o vídeo para liberar o avanço</p>`
-      : '';
-
     var stage = live
-      ? `<div class="qs-video-stage">${live}${lock}</div>`
+      ? `<div class="qs-video-stage">${live}</div>`
       : `<div class="qs-video-ph">
           <span class="qs-vbadge">${badge}</span>
           <div class="qs-vicon" aria-hidden="true">▶</div>
@@ -731,27 +720,9 @@
     if (root) root.classList.toggle('is-playing', !!on);
   };
 
-  QuestionScreen.prototype._paintVideoLock = function () {
-    var chip = this.el.querySelector('[data-qs-video-lock]');
-    if (!chip) return;
-    var g = this._videoGuard;
-    if (this._videoUnlocked) {
-      chip.classList.add('is-free');
-      chip.textContent = '✔ Liberado — pode avançar';
-      return;
-    }
-    chip.classList.remove('is-free');
-    if (g && g.duration > 0) {
-      chip.textContent = '🔒 Libera em ' + fmtClock(unlockThreshold(g.duration) - g.maxWatched);
-    } else {
-      chip.textContent = '🔒 Assista o vídeo para liberar o avanço';
-    }
-  };
-
   QuestionScreen.prototype._unlockVideo = function () {
     if (this._videoUnlocked) return;
     this._videoUnlocked = true;
-    this._paintVideoLock();
     this._complete({ kind: 'video' });
   };
 
@@ -775,7 +746,6 @@
     };
     this._videoGuard = guard;
     this._videoUnlocked = false;
-    this._paintVideoLock();
 
     function snapBack() {
       if (self._videoUnlocked) return;
@@ -824,7 +794,6 @@
       if (t > allowed) { snapBack(); return; }
       if (t > guard.maxWatched) guard.maxWatched = t;
       if (guard.maxWatched >= unlockThreshold(guard.duration)) self._unlockVideo();
-      else self._paintVideoLock();
     }
 
     this._videoOnTime = handleTime;
@@ -887,7 +856,6 @@
           if (typeof d === 'number' && d > 0) guard.duration = d;
         } catch (e) {}
         guard.lastWall = Date.now();
-        self._paintVideoLock();
         try {
           player.onEvent(function (e) {
             var msg = e && e.message;
