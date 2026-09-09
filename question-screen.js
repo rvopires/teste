@@ -480,11 +480,11 @@
             <span data-qs-match-progress>0 de ${pairs.length} pares</span>
           </div>
           <div class="qs-match">
-            <div>
+            <div class="qs-match-side is-ex">
               <div class="qs-match-col-title">Exercício</div>
               <div data-qs-match-ex></div>
             </div>
-            <div>
+            <div class="qs-match-side is-body">
               <div class="qs-match-col-title">Região do corpo</div>
               <div data-qs-match-body></div>
             </div>

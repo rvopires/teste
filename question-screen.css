@@ -2931,8 +2931,52 @@
 .qs-match-item.is-matched { background: #e8f7ee; color: var(--qs-ok-dk); cursor: default; }
 .qs-match-item.is-wrong { background: #ffecec; }
 
+/* ===== Jogo de associação no celular =============================
+   Empilhar as duas colunas obrigava a percorrer os oito exercícios
+   inteiros para só então chegar às regiões: cada par pedia descer e
+   subir de novo. Como as regiões são rótulos curtos, elas viram uma
+   paleta de fichas grudada no topo, e só a lista de exercícios rola.
+   O par se resolve com dois toques, sem perder nada de vista. */
 @media (max-width: 760px) {
-  .qs-match { grid-template-columns: 1fr; }
+  .qs-match {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .qs-match-side.is-body {
+    order: -1;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: var(--qs-paper);
+    /* as margens negativas esticam o fundo até a borda do painel, senão
+       a lista aparece por baixo ao rolar */
+    margin: 0 -12px;
+    padding: 4px 12px 8px;
+    box-shadow: 0 8px 10px -9px rgba(4, 26, 20, 0.6);
+  }
+  .qs-match-side.is-body [data-qs-match-body] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .qs-match-side.is-body .qs-match-item {
+    width: auto;
+    margin: 0;
+    padding: 8px 13px;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    border-color: rgba(18, 107, 82, 0.3);
+  }
+  /* ficha usada sai da paleta: sobra espaço e sobram menos escolhas.
+     O acerto continua visível no exercício, que fica verde. */
+  .qs-match-side.is-body .qs-match-item.is-matched { display: none; }
+
+  .qs-match-side.is-ex .qs-match-item {
+    font-size: 0.78rem;
+    padding: 9px 11px;
+    margin-bottom: 5px;
+  }
 }
 
 .qs-rules {
@@ -3277,9 +3321,10 @@
   }
   .qs-progress { min-width: 0; max-width: none; margin: 0; }
 
-  /* O chip guarda o lugar mesmo calado: sumindo de vez, a coluna fecha
-     e a barra inteira se rearranja quando o desafio começa. */
-  .qs-app:not(.is-home) .qs-pts[hidden] {
+  /* Os chips guardam o lugar mesmo calados: sumindo de vez, a coluna
+     fecha e a barra inteira se rearranja quando o desafio começa. */
+  .qs-app:not(.is-home) .qs-pts[hidden],
+  .qs-app:not(.is-home) .qs-page-chip[hidden] {
     display: block !important;
     visibility: hidden;
   }
@@ -3290,6 +3335,15 @@
     min-width: 0;
     font-variant-numeric: tabular-nums;   /* dígitos de mesma largura */
   }
+
+  /* Sem isto a coluna aperta e "750 pts" quebra em duas linhas: a fileira
+     de cima cresce e as ferramentas, centradas nela, descem junto. Foi o
+     que acontecia ao chegar na última pergunta, quando a pontuação passa
+     a ter três dígitos e o chip fica mais largo. */
+  .qs-pts,
+  .qs-page-chip,
+  .qs-tool-label,
+  .qs-tools .qs-label { white-space: nowrap; }
   .qs-tools { flex: 0 0 auto; justify-content: flex-end; gap: 8px; }
 }
 
