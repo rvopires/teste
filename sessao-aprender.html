@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Trilha da Ergonomia</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=mob07">
+  <link rel="stylesheet" href="question-screen.css?v=mob08">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -150,10 +150,10 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=mob07"></script>
-  <script src="question-screen.js?v=mob07"></script>
-  <script src="narration-text.js?v=mob07"></script>
-  <script src="narration.js?v=mob07"></script>
+  <script src="question-screen-data.js?v=mob08"></script>
+  <script src="question-screen.js?v=mob08"></script>
+  <script src="narration-text.js?v=mob08"></script>
+  <script src="narration.js?v=mob08"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -672,7 +672,31 @@
     renderProgress();
     updateNav();
     syncJumpUI();
+    revelarModuloLiberado();
     if (window.Narration) Narration.pageChanged();
+  }
+
+  /* No celular a trilha não cabe inteira: a lista começa no Módulo 1 e o
+     liberado pode ficar abaixo da dobra, passando a impressão de que o curso
+     termina no 2. Aqui a rolagem já vai até ele. O movimento é suave de
+     propósito: além de levar ao card certo, mostra que a lista corre. */
+  function revelarModuloLiberado() {
+    var caixa = shell.querySelector('.qs-menu');
+    var card = caixa && caixa.querySelector('.qs-mod-card.is-open');
+    if (!caixa || !card) return;
+
+    requestAnimationFrame(function () {
+      var sobra = caixa.scrollHeight - caixa.clientHeight;
+      if (sobra <= 0) return;                       // cabe tudo: nada a fazer
+
+      var rc = card.getBoundingClientRect();
+      var rb = caixa.getBoundingClientRect();
+      if (rc.top >= rb.top && rc.bottom <= rb.bottom) return;   // já à vista
+
+      // uma folga acima do card para ele não colar na borda
+      var destino = rc.top - rb.top + caixa.scrollTop - 12;
+      caixa.scrollTo({ top: Math.max(0, Math.min(sobra, destino)), behavior: 'smooth' });
+    });
   }
 
   function openModule(i) {
