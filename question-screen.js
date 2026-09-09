@@ -272,13 +272,16 @@
     var chipHtml = chips.map(function (c) {
       return `<span class="qs-finale-chip">${esc(c)}</span>`;
     }).join('');
+    var quote = data.quote || data.motto || '';
     return `
       <article class="qs-screen is-finale" data-qs-root data-type="finale">
         ${photo}
         <div class="qs-finale-veil" aria-hidden="true"></div>
+        <div class="qs-finale-glow" aria-hidden="true"></div>
         <div class="qs-finale-inner">
           ${data.kicker ? `<div class="qs-finale-kicker">${esc(data.kicker)}</div>` : ''}
           <div class="qs-finale-card medal-${esc(data.medalRank || 'none')}">
+            <div class="qs-finale-shine" aria-hidden="true"></div>
             <div class="qs-finale-eyebrow">${esc(data.eyebrow || 'Certificado de conclusão')}</div>
             <div class="qs-finale-trophy" aria-hidden="true">${esc(data.medal || '🏆')}</div>
             ${data.medalName ? `<div class="qs-finale-medal-name">${esc(data.medalName)}</div>` : ''}
@@ -287,6 +290,7 @@
             ${data.points != null ? `<div class="qs-finale-score">${esc(data.points)}<small> / ${esc(data.maxPoints != null ? data.maxPoints : '')} pts</small></div>` : ''}
             ${data.hits != null ? `<p class="qs-finale-hits">${esc(data.hits)} acertos em ${esc(data.questions != null ? data.questions : '')} questões</p>` : ''}
             <p class="qs-finale-body">${esc(data.body || data.subtitle || '')}</p>
+            ${quote ? `<blockquote class="qs-finale-quote"><span aria-hidden="true">“</span>${esc(quote)}<span aria-hidden="true">”</span></blockquote>` : ''}
             ${chipHtml ? `<div class="qs-finale-chips">${chipHtml}</div>` : ''}
           </div>
         </div>

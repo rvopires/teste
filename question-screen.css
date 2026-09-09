@@ -1743,7 +1743,24 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(180deg, rgba(4, 26, 20, 0.42) 0%, rgba(18, 107, 82, 0.28) 45%, rgba(4, 26, 20, 0.55) 100%);
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%, rgba(168, 245, 236, 0.22) 0%, transparent 62%),
+    linear-gradient(180deg, rgba(4, 26, 20, 0.35) 0%, rgba(18, 107, 82, 0.22) 45%, rgba(4, 26, 20, 0.5) 100%);
+}
+.qs-finale-glow {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(520px, 90%);
+  height: min(420px, 78%);
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 215, 106, 0.28) 0%, transparent 42%),
+    radial-gradient(circle at 50% 55%, rgba(124, 255, 178, 0.22) 0%, transparent 55%);
+  filter: blur(8px);
+  animation: qsFinaleGlow 3.6s ease-in-out infinite alternate;
 }
 .qs-finale-inner {
   position: relative;
@@ -1760,105 +1777,170 @@
 }
 .qs-finale-kicker { display: none; }
 .qs-finale-card {
-  width: min(100%, 420px);
+  position: relative;
+  overflow: hidden;
+  width: min(100%, 440px);
   text-align: center;
-  padding: 18px 20px 18px;
+  padding: 22px 22px 20px;
   background:
-    linear-gradient(145deg, rgba(255,255,255,0.08) 0%, transparent 42%),
-    linear-gradient(160deg, #0C4535 0%, #062820 40%, #062820 75%, #041A14 100%);
-  border: 1.5px solid rgba(255, 64, 72, 0.48);
-  border-radius: 18px;
+    linear-gradient(155deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 28%, transparent 52%),
+    linear-gradient(180deg, rgba(168, 245, 236, 0.14) 0%, transparent 38%),
+    linear-gradient(160deg, #1A8A6A 0%, #0E5A45 32%, #0A3F32 68%, #062820 100%);
+  border: 1.5px solid rgba(168, 245, 236, 0.45);
+  border-radius: 20px;
   box-shadow:
-    0 18px 40px rgba(0,0,0,0.4),
-    0 0 0 1px rgba(255,255,255,0.08) inset,
-    0 0 36px rgba(255, 64, 72, 0.18);
+    0 22px 48px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+    0 0 48px rgba(124, 255, 178, 0.28),
+    0 0 80px rgba(255, 215, 106, 0.12);
   animation: qsFinaleIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+.qs-finale-shine {
+  position: absolute;
+  inset: -40% -20%;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.14) 48%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0.1) 52%,
+    transparent 65%
+  );
+  transform: translateX(-55%) rotate(8deg);
+  animation: qsFinaleShine 3.8s ease-in-out 0.6s infinite;
+  pointer-events: none;
+}
 .qs-finale-eyebrow {
+  position: relative;
   display: inline-block;
   font-family: var(--qs-font-h);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #A8F5EC;
-  margin-bottom: 8px;
-  padding: 4px 10px;
+  color: #E8FFF8;
+  margin-bottom: 10px;
+  padding: 5px 12px;
   border-radius: 99px;
-  background: rgba(255, 64, 72, 0.16);
-  border: 1px solid rgba(255, 64, 72, 0.45);
+  background: linear-gradient(135deg, rgba(255, 64, 72, 0.42), rgba(255, 120, 90, 0.22));
+  border: 1px solid rgba(255, 200, 180, 0.55);
+  box-shadow: 0 0 18px rgba(255, 64, 72, 0.28);
 }
 .qs-finale-trophy {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 8px;
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 10px;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 28px;
-  background: linear-gradient(145deg, #FF7078, #FF4048 40%, #126B52);
-  box-shadow: 0 0 0 3px rgba(255, 64, 72, 0.32), 0 0 16px rgba(18, 107, 82, 0.45);
+  font-size: 30px;
+  background: linear-gradient(145deg, #FFE08A, #FF7078 38%, #1F9D55 100%);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.22),
+    0 0 0 7px rgba(255, 215, 106, 0.28),
+    0 8px 28px rgba(255, 180, 60, 0.45),
+    0 0 36px rgba(124, 255, 178, 0.4);
+  animation: qsFinaleTrophy 2.4s ease-in-out infinite;
 }
 .qs-finale-title {
+  position: relative;
   font-family: var(--qs-font-h);
-  font-size: clamp(1.25rem, 2.6vw, 1.55rem);
+  font-size: clamp(1.3rem, 2.8vw, 1.65rem);
   color: #fff;
   margin: 0 0 6px;
   font-weight: 800;
   letter-spacing: 0.02em;
-  text-shadow: 0 2px 18px rgba(255, 64, 72, 0.32);
+  text-shadow:
+    0 0 24px rgba(168, 245, 236, 0.45),
+    0 2px 18px rgba(255, 64, 72, 0.28);
 }
-.qs-finale-title span { color: var(--qs-red); }
+.qs-finale-title span { color: #FFD76A; }
 .qs-finale-line {
-  width: 48px;
-  height: 2px;
-  margin: 0 auto 10px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, transparent, #FF4048, transparent);
+  position: relative;
+  width: 64px;
+  height: 3px;
+  margin: 0 auto 12px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, transparent, #A8F5EC, #FFD76A, #FF7078, transparent);
+  box-shadow: 0 0 12px rgba(168, 245, 236, 0.55);
 }
 .qs-finale-medal-name {
+  position: relative;
   font-family: var(--qs-font-h);
   font-weight: 800;
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #FFD76A;
   margin: 0 0 4px;
+  text-shadow: 0 0 14px rgba(255, 215, 106, 0.55);
 }
-.qs-finale-card.medal-silver .qs-finale-medal-name { color: #d9e3ef; }
-.qs-finale-card.medal-bronze .qs-finale-medal-name { color: #e8b48a; }
+.qs-finale-card.medal-silver .qs-finale-medal-name { color: #e8f0f8; }
+.qs-finale-card.medal-bronze .qs-finale-medal-name { color: #f0c29a; }
 .qs-finale-score {
+  position: relative;
   font-family: var(--qs-font-h);
   font-weight: 900;
-  font-size: clamp(1.5rem, 3.2vw, 1.9rem);
+  font-size: clamp(1.55rem, 3.2vw, 2rem);
   color: #fff;
   line-height: 1;
   margin: 2px 0 4px;
-  text-shadow: 0 2px 18px rgba(255, 64, 72, 0.35);
+  text-shadow:
+    0 0 22px rgba(124, 255, 178, 0.55),
+    0 2px 14px rgba(0, 0, 0, 0.35);
 }
 .qs-finale-score small {
   display: inline-block;
   margin-left: 4px;
   font-size: 0.42em;
   font-weight: 800;
-  color: rgba(255,255,255,0.7);
+  color: rgba(232, 255, 248, 0.85);
   vertical-align: middle;
 }
 .qs-finale-hits {
+  position: relative;
   margin: 0 0 8px;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #A8F5EC;
+  color: #C8FFF4;
 }
 .qs-finale-body {
-  color: rgba(255,255,255,0.86);
+  position: relative;
+  color: rgba(255, 255, 255, 0.92);
   font-size: 0.82rem;
-  line-height: 1.4;
-  margin: 0 auto 10px;
+  line-height: 1.45;
+  margin: 0 auto 12px;
   max-width: 34em;
   font-weight: 600;
 }
+.qs-finale-quote {
+  position: relative;
+  margin: 0 auto 14px;
+  max-width: 28em;
+  padding: 12px 14px;
+  font-family: var(--qs-font-h);
+  font-size: 0.86rem;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1.45;
+  color: #FFF8E6;
+  background: linear-gradient(135deg, rgba(255, 215, 106, 0.18), rgba(168, 245, 236, 0.1));
+  border: 1px solid rgba(255, 215, 106, 0.42);
+  border-radius: 14px;
+  box-shadow:
+    0 0 24px rgba(255, 215, 106, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+}
+.qs-finale-quote span {
+  color: #FFD76A;
+  font-style: normal;
+  font-weight: 900;
+  font-size: 1.05em;
+}
 .qs-finale-chips {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -1871,18 +1953,33 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #fff;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255, 64, 72, 0.45);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(168, 245, 236, 0.4);
   border-radius: 99px;
   padding: 5px 10px;
+  box-shadow: 0 0 12px rgba(124, 255, 178, 0.12);
 }
 .qs-finale-chip:first-child {
-  background: linear-gradient(135deg, rgba(255,64,72,0.32), rgba(255,64,72,0.1));
-  color: #A8F5EC;
+  background: linear-gradient(135deg, rgba(255, 64, 72, 0.42), rgba(255, 120, 90, 0.18));
+  border-color: rgba(255, 180, 160, 0.55);
+  color: #E8FFF8;
 }
 @keyframes qsFinaleIn {
   from { opacity: 0; transform: translateY(22px) scale(0.97); }
   to { opacity: 1; transform: none; }
+}
+@keyframes qsFinaleGlow {
+  from { opacity: 0.7; transform: translate(-50%, -50%) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+}
+@keyframes qsFinaleShine {
+  0%, 55% { transform: translateX(-60%) rotate(8deg); opacity: 0; }
+  65% { opacity: 1; }
+  100% { transform: translateX(60%) rotate(8deg); opacity: 0; }
+}
+@keyframes qsFinaleTrophy {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.04); }
 }
 
 /* feedback: foto fica verde ou vermelha (sem faixa Kahoot) */
@@ -3962,7 +4059,10 @@
   .qs-media.is-answered::after,
   .qs-mod-card.is-open.is-pulse,
   .qs-pts.is-gain,
-  .qs-pts-fly.is-on { animation: none !important; }
+  .qs-pts-fly.is-on,
+  .qs-finale-glow,
+  .qs-finale-shine,
+  .qs-finale-trophy { animation: none !important; }
   .qs-mod-card.is-open.is-pulse {
     box-shadow: 0 0 0 4px rgba(255, 64, 72, 0.25), 0 10px 24px rgba(255, 64, 72, 0.28);
   }

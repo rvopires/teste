@@ -755,10 +755,11 @@ window.QUESTION_SCREEN_SESSION = {
           kicker: "🏆 Conclusão",
           eyebrow: "Certificado de conclusão",
           title: "Parabéns",
-          body: "Você concluiu o treinamento NR 17 — Ergonomia no Comércio e na Logística. Por mérito, dedicação e compromisso com a ergonomia, você percorreu os módulos disponíveis.",
+          body: "Você concluiu o treinamento NR 17 — Ergonomia no Comércio e na Logística.",
+          quote: "Cuidar da sua postura hoje é proteger a sua energia amanhã. Leve esses cuidados para cada turno — seu corpo agradece.",
           chips: ["NR 17", "Ergonomia", "Comércio e Logística"],
           image: "assets/fotos/capafinal.png",
-          transcript: "Parabéns pela conclusão do treinamento."
+          transcript: "Parabéns pela conclusão do treinamento. Cuidar da sua postura hoje é proteger a sua energia amanhã."
         }
       ]
     }
