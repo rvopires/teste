@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Trilha da Ergonomia</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=go01">
+  <link rel="stylesheet" href="question-screen.css?v=go02">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -147,10 +147,10 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=go01"></script>
-  <script src="question-screen.js?v=go01"></script>
-  <script src="narration-text.js?v=go01"></script>
-  <script src="narration.js?v=go01"></script>
+  <script src="question-screen-data.js?v=go02"></script>
+  <script src="question-screen.js?v=go02"></script>
+  <script src="narration-text.js?v=go02"></script>
+  <script src="narration.js?v=go02"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -756,6 +756,9 @@
     if (!item) return false;
     if (item.view === 'home') { showHome(); return true; }
     if (item.view === 'menu') { showMenu(); return true; }
+    /* O pulo atravessa o bloqueio dos módulos, então libera o caminho até ali:
+       sem isso o menu mostraria como trancado o módulo em que a pessoa está. */
+    progress.unlockedUpTo = Math.max(progress.unlockedUpTo, item.mi);
     jumpToScreen(item.mi, item.si);
     return true;
   }
@@ -1122,16 +1125,14 @@
     var goTimer = null;
     var GO_RE = /^go\d{1,3}$/;
 
-    /* "go12" leva à página 12, com Enter ou depois de uma pausa. O pulo é do
-       modo simulação, então fora dele o atalho explica o que falta em vez de
-       não fazer nada — silêncio aqui parece defeito. */
+    /* "go12" leva à página 12, com Enter ou depois de uma pausa. Funciona
+       sozinho, sem depender do modo simulação. */
     function runGo() {
       if (goTimer) { clearTimeout(goTimer); goTimer = null; }
       var alvo = GO_RE.test(goBuf) ? parseInt(goBuf.slice(2), 10) : 0;
       goBuf = '';
       if (!alvo) return;
-      if (!demoMode) showSimToast('Atalho go: digite qa1010 para ligar a simulação');
-      else if (!jumpToPage(alvo)) showSimToast('Não existe página ' + alvo);
+      if (!jumpToPage(alvo)) showSimToast('Não existe página ' + alvo);
     }
 
     window.addEventListener('keydown', function (e) {
