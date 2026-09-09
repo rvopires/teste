@@ -474,6 +474,16 @@
   opacity: 0.95;
 }
 
+/* Cinco toques na logo ligam o modo simulação. Sem isto o celular entende a
+   sequência como duplo toque para dar zoom e come parte dos toques. */
+.qs-home-logo img,
+.qs-brand img {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .qs-progress {
   flex: 1 1 auto;
   display: flex;

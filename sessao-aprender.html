@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Trilha da Ergonomia</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=vid01">
+  <link rel="stylesheet" href="question-screen.css?v=logo01">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -147,10 +147,10 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=vid01"></script>
-  <script src="question-screen.js?v=vid01"></script>
-  <script src="narration-text.js?v=vid01"></script>
-  <script src="narration.js?v=vid01"></script>
+  <script src="question-screen-data.js?v=logo01"></script>
+  <script src="question-screen.js?v=logo01"></script>
+  <script src="narration-text.js?v=logo01"></script>
+  <script src="narration.js?v=logo01"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -1164,6 +1164,31 @@
       if (seq !== target) return;
       seq = '';
       toggleDemoMode();
+    });
+  })();
+
+  /* No celular não dá para digitar qa1010, então cinco toques na logo fazem o
+     mesmo. Vale nas duas logos: a da abertura e a da barra dos módulos. A
+     contagem zera sozinha se houver pausa longa, para cliques avulsos ao
+     longo do treinamento não irem se somando até ligar a simulação sozinha. */
+  (function initLogoShortcut() {
+    var TOQUES = 5;
+    var PAUSA = 1200;
+    var conta = 0;
+    var ultimo = 0;
+
+    function toque() {
+      var agora = Date.now();
+      conta = (agora - ultimo > PAUSA) ? 1 : conta + 1;
+      ultimo = agora;
+      if (conta < TOQUES) return;
+      conta = 0;
+      toggleDemoMode();
+    }
+
+    var logos = document.querySelectorAll('.qs-home-logo img, .qs-brand img');
+    Array.prototype.forEach.call(logos, function (el) {
+      el.addEventListener('click', toque);
     });
   })();
 
