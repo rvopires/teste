@@ -3238,6 +3238,36 @@
   .qs-app .qs-screen[class*="is-norm"] .qs-note,
   .qs-app .qs-screen[class*="is-norm"] .qs-note-card { padding: 7px 10px; margin-top: 2px; }
   .qs-app .qs-screen[class*="is-norm"] .qs-note-text { font-size: 0.76rem; line-height: 1.3; }
+
+  /* As telas da NR 17.5 usam infográfico em pé (mais alto que largo). Na faixa
+     larga e baixa do celular, o recorte "cover" escondia metade da imagem, e o
+     painel tinha overflow oculto, então o texto que sobrava sumia sem aviso.
+     Aqui a tela vira uma coluna só: a foto aparece inteira, na proporção dela,
+     e o conjunto rola. */
+  .qs-app .qs-screen.is-norm-compact.has-split {
+    display: block;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .qs-app .qs-screen.is-norm-compact.has-split .qs-media-split {
+    flex: none;
+    width: 100%;
+    height: auto;
+    max-height: none;
+  }
+  .qs-app .qs-screen.is-norm-compact.has-split .qs-img,
+  .qs-app .qs-screen.is-norm-compact.has-split .qs-img-contain {
+    position: static;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+  .qs-app .qs-screen.is-norm-compact.has-split .qs-panel-split {
+    overflow: visible;
+    height: auto;
+    padding: 12px 12px 16px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
