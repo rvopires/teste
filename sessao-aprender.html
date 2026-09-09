@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer">
   <title>NR 17 — Trilha da Ergonomia</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="question-screen.css?v=mob05">
+  <link rel="stylesheet" href="question-screen.css?v=mob07">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; }
   </style>
@@ -66,9 +66,9 @@
         <img src="assets/fotos/LOGO.png" alt="TecnoCursos">
       </div>
       <div class="qs-progress" id="progress" aria-label="Progresso"></div>
+      <span class="qs-page-chip" id="pageChip" hidden>0/0</span>
       <div class="qs-pts" id="ptsChip" hidden>0 pts</div>
       <div class="qs-tools">
-        <span class="qs-page-chip" id="pageChip" hidden>0/0</span>
         <button type="button" id="btnMode" class="qs-sim-btn" title="Modo simulação" hidden aria-pressed="false">
           <span class="qs-label" id="simLabel">Simulação: OFF</span>
         </button>
@@ -150,10 +150,10 @@
 
   <audio id="bg-music" loop preload="metadata" aria-hidden="true"></audio>
 
-  <script src="question-screen-data.js?v=mob05"></script>
-  <script src="question-screen.js?v=mob05"></script>
-  <script src="narration-text.js?v=mob05"></script>
-  <script src="narration.js?v=mob05"></script>
+  <script src="question-screen-data.js?v=mob07"></script>
+  <script src="question-screen.js?v=mob07"></script>
+  <script src="narration-text.js?v=mob07"></script>
+  <script src="narration.js?v=mob07"></script>
   <script>
 (function () {
   var session = window.QUESTION_SCREEN_SESSION;
@@ -909,7 +909,10 @@
     qs = QuestionScreen.mount(shell, payload, {
       quizScoring: quizState.active && isQuizStep(s) && !s.opinion,
       maxPoints: PTS_MAX,
-      time: s.time || 12,
+      /* 18s: uma pergunta com quatro alternativas dá umas 45 palavras, que já
+         levam perto de 13s só para ler. As telas que pedem outro tempo, como a
+         de ordenar, trazem o seu e mandam neste. */
+      time: s.time || 18,
       onSelect: function (result) {
         answered[s.id] = true;
         if (quizState.active && isQuizStep(s) && !s.opinion) {

@@ -3245,41 +3245,58 @@
 }
 
 /* ===== Barra de topo no celular ==================================
-   A logo tem 208px de largura e não encolhia: numa tela estreita ela
-   empurrava pontos, contador de página e ferramentas para fora da
-   direita, que sumiam sem aviso nenhum. Agora a barra usa duas linhas
-   — em cima os controles, embaixo só o progresso, que é o único que
-   estica bem — e a logo vira a peça flexível, por ser a que menos faz
-   falta se encolher. O respiro de cima diminui para compensar a linha
-   nova e não roubar altura do slide. */
+   Antes tudo dividia uma fileira elástica, então qualquer peça que
+   entrasse ou crescesse remexia as outras: o chip de pontos só aparece
+   no desafio, o número dele vai de "0 pts" a "750 pts", e com ele em
+   cena a fileira estourava e as ferramentas caíam para a linha de
+   baixo. Aqui vira grade: cada peça tem coluna fixa e ninguém mais
+   dança. O contador de página desce para a linha do progresso, que
+   estava sobrando espaço, e isso devolve a folga que faltava em cima. */
 @media (max-width: 760px) {
-  .qs-top {
-    flex-wrap: wrap;
-    gap: 8px;
+  .qs-app:not(.is-home) .qs-top {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    grid-template-areas:
+      "marca  folga   pontos  ferramentas"
+      "trilha trilha  trilha  pagina";
+    align-items: center;
+    gap: 7px 8px;
     padding: 8px 12px 6px;
   }
-  .qs-brand { flex: 0 1 auto; min-width: 0; }
+  .qs-app:not(.is-home) .qs-brand { grid-area: marca; }
+  .qs-app:not(.is-home) .qs-progress { grid-area: trilha; }
+  .qs-app:not(.is-home) .qs-pts { grid-area: pontos; justify-self: end; }
+  .qs-app:not(.is-home) .qs-page-chip { grid-area: pagina; justify-self: end; }
+  .qs-app:not(.is-home) .qs-tools { grid-area: ferramentas; }
+
   .qs-brand img {
     width: auto;
     height: auto;
     max-height: 26px;
     max-width: 100%;
   }
-  .qs-progress {
-    order: 3;
-    flex: 1 0 100%;
+  .qs-progress { min-width: 0; max-width: none; margin: 0; }
+
+  /* O chip guarda o lugar mesmo calado: sumindo de vez, a coluna fecha
+     e a barra inteira se rearranja quando o desafio começa. */
+  .qs-app:not(.is-home) .qs-pts[hidden] {
+    display: block !important;
+    visibility: hidden;
+  }
+  .qs-pts,
+  .qs-page-chip {
+    font-size: 0.72rem;
+    padding: 5px 9px;
     min-width: 0;
-    max-width: none;
-    margin: 0;
+    font-variant-numeric: tabular-nums;   /* dígitos de mesma largura */
   }
-  .qs-pts { font-size: 0.72rem; min-width: 0; padding: 5px 9px; }
-  .qs-tools {
-    flex: 0 1 auto;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px;
-  }
-  .qs-page-chip { font-size: 0.72rem; padding: 5px 8px; }
+  .qs-tools { flex: 0 0 auto; justify-content: flex-end; gap: 8px; }
+}
+
+/* Aparelho estreito: a logo cede altura para caber sem espremer o resto */
+@media (max-width: 360px) {
+  .qs-brand img { max-height: 20px; }
+  .qs-tool-label { font-size: 0.56rem; }
 }
 
 /* ===== Densidade no celular =====================================

@@ -689,7 +689,7 @@
   QuestionScreen.prototype._startTimer = function () {
     this._stopTimer();
     var self = this;
-    var total = Number(this.options.time || this.data.time || 12);
+    var total = Number(this.options.time || this.data.time || 18);
     this._tTot = total;
     this._tLeft = total;
     var bar = this.el.querySelector('[data-qs-timer]');
